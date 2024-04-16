@@ -136,4 +136,4 @@
                         new Promise(resolve => setTimeout(() => resolve(3), 1000))
                     ]).then(alert);  // 1, 2, 3
                 · If any of the Promises is rejected, the promise returned by Promise.all immediatly rejects with that error.
-            · Promise.allSettled -> 
+            · Promise.allSettled() -> 
