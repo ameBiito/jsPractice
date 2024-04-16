@@ -1,0 +1,171 @@
+· ERROR HANDLING 
+
+    · THE "try...catch" SYNTAX - This construct has 2 main blocks: try then catch:
+            try{
+                //some code 
+            } catch(err) {
+                //error handling
+            }
+        1. First, the try block is executed
+        2. If there are no errors, then catch(err) is ignored: the execution reaches the end of "try" and goes on skipping "catch"
+        3. If an error occurs, the "try" execution is stopped and control flows to the beginning of "catch(err)". The "err" variable will contain an error object with details about what happened
+        · "try...catch" only works only for runtime errors(exceptions), in other words, it should be valid js code without typos. 
+        · If an exception occurs in "scheduled code"(like in setTimeout()), then try...catch won't catch it. That's because the function itself is executed later, 
+          when the engine already left the try...catch block. For that cases, the "try...catch" must be inside the function.
+                setTimeout(function(){
+                    try{
+                        noSuchVariable;   // this error can be handled by the block and is thus caught 
+                    } catch {
+                        alert("An error");
+                    }
+                }, 1000);
+    · ERROR OBJECT - When an error occurs, js generates an error object containing the details about it. Then the object is passed as an argument to "catch"
+      For all built-in errors, the error object has 3 main properties:
+        - name -> Error name. For instance, for an undefined variable, that's "ReferenceError".
+        - message -> Textual message message about the error details. 
+        - stack -> Current call-stack: A string with information about the sequence of nested calls that led to the error; used for debugging purposes
+        - Other non-standard properties are avaialble in most environments.
+    · OPTIONAL "catch" BINDING -> If we don't need error details we can simply omit it:
+            try{
+                ...
+            } catch {  // no (err) 
+                ...
+            }
+    · THE "throw" OPERATOR - The "throw" operator generates an error, the syntax is:
+            throw <error object>
+        · Technically, anything can be an error object(even a primitive), however, it's better to throw an object that has both a name and message to ensure a little adhesion
+          to the standard. js has also many built-in constructors for standard errors: Error, SyntaxError, ReferenceError, TypeError and others.
+                let error = new Error("Things happen o_0");
+                alert(error.name); //Error
+                alert(error.message); //Things happen o_0 
+            · For instance:
+                    let json = '{"age": 30}';
+                    try{
+                        let user = JSON.parse(json);
+                        if(!user.name){
+                            throw new SyntaxError("Incomplete data: No name");
+                        } 
+                        alert(user.name);
+                    } catch(err) {
+                        alert("JSON Error: " + err.message); // JSON Error: Incomplete data: No name
+                    }
+        · RETHROWNG - We can "rethrow" an error inside catch so that if we happen to have to error we can't handle, we have no problem. The rule is simple:
+          Catch should only process errors that it knows and "rethrow" all others.
+            · Usually we can check the error type using "instanceof":
+                    try{
+                        user = {...};
+                    } catch(err) {
+                        if(err instanceof ReferenceError){
+                            alert('ReferenceError');
+                        } else {
+                            throw err; //rethrow
+                        }
+                    }
+                · The rethrow from inside the "catch" block falls out of this try...catch and is either handled by an outside "catch" or it kills the script
+        · THE "finally" BLOCK - The "try...catch" construct has one more clause: "finally". If it exists, it runs in all cases:
+          - After "try" if there were no errors
+          - After "catch" if there were errors  
+                try{
+                    //...
+                } catch(err) {
+                    //error handling
+                } finally {
+                    // always executed block of code 
+                }
+            · "finally" is used when we start something and want to finalize no matter the outcome. 
+            · "finally" always executes, even when we have an explicit exit, like a return 
+            · "finally" can also be used without "catch" if we don't want to handle errors but the task has to be finalized.
+        · GLOBAL CATCH - There are environment specific ways to handle errors we didn't catch on a global level. In nodeJS, it's "process.on("uncaughtException").
+          In the browser, we can assign a function to window.onerror property that runs in case of an uncaught error:
+                window.onerror = function (message, url, line, col, error){
+                    //...
+                };
+            - message -> Error message
+            - url -> URL of the script where the error has happened
+            - line, col -> Line and column numbers where the error happened
+            - error -> Error object 
+            · For instance:
+                    <script>
+                        window.onerror = function(message, url, line, col, error){
+                            alert(`${message}\n At ${line}:${col} of ${url}`);
+                        };
+                        function readData(){
+                            badFunc(); // Something goes wrong
+                        }
+                        readData();
+                    </script>
+                · The role of window.onerror is to send messages to developers.
+
+    · CUSTOM ERRORS, EXTENDING ERROR - Even though js allows us to "throw" any argument, it is usually more practical to inherit from the Error object so that it's possible 
+      to use "obj instanceof Error" to identify error objects. 
+    · EXTENDING ERROR - Let's start with an example. Consider the case where we want to validate the data inside a JSON string:
+            let json = '{"name": "John", "age": 30}';
+        · Knowing that the basic syntax for Error is:
+                class Error{
+                    constructor(message){
+                        this.message = message;
+                        this.name = "Error";
+                        this.stack = <call_stack>; //non-standard but most environment support it
+                    }
+                }
+            · We can create a Validation Error from this:
+                    class ValidationError extends Error {
+                        constructor(message){
+                            super(message);
+                            this.name = "Validation Error";
+                            //or we can use 
+                            //this.name = this.constructor.name;
+                        }
+                    }
+                    function test(){
+                        throw new ValidationError("Whoops!");
+                    }
+                    try{
+                        test();
+                    } catch(err) {
+                        alert(err.message);
+                        alert(err.stack); //inherited from Error
+                    }
+    · WRAPPING EXCEPTIONS - This technique involves only knowing there was an error and get its details only if we need to. In order to do that we need to:
+        1. Make a class to represent the generic kind of error
+        2. When an error will be triggered, the block will generate an error object from the previusly mentioned class
+        3. That object will keep reference ot the original error in its "cause" property.
+        - This way the block will only have to check the object, not every kind of error and if it need more details, it can check the "cause" property. For instance:
+                class ReadError extends Error {
+                    constructor(message, cause){
+                        super(message);
+                        this.cause = cause;
+                        this.name = 'ReadError';
+                    }
+                }
+                class ValidationError extends Error {...}
+                class PropertyRequiredError extends ValidationError {...}
+                function validateUser(user){
+                    if(!user.age){
+                        throw new PropertyRequiredError("age");
+                    }
+                    if(!user.name){
+                        throw new PropertyRequiredError("name");
+                    }
+                }
+                function readUser(json){
+                    let user;
+                    try{
+                        user = JSON.parse(json);
+                    } catch(err) {
+                        if (err instanceof SyntaxError){
+                            throw new ReadError("SyntaxError", err);
+                        } else {
+                            thorw err; //rethrow
+                        }
+                    }
+                    try {
+                        validateUser(user);
+                    } catch(err) {
+                        if(err instanceof ValidationError){
+                            throw new ReadError("Validation Error", err);
+                        } else {
+                            throw err;
+                        }
+                    }
+                }

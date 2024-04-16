@@ -1,0 +1,350 @@
+· CLASSES 
+
+    · CLASS BASIC SYNTAX - The basic syntax is:
+            class Myclass {
+                //class methods
+                constructor() {...}
+                method1() {...}
+                ...
+                methodN() {...}
+                ...
+            }
+        · Then use "new Myclass" to create a new object with that class' methods. The constructor() method is called by default when we call "new"
+                class User{
+                    constructor(name){
+                        this.name = name;
+                    }
+                    sayHi(){
+                        alert(`Hi ${this.name}`);
+                    }
+                }
+                let user = new User("John");
+                user.sayHi(); //Hi John 
+    · In js, a class is a kind of function. For example what "class User" does is:
+        1. Creates a function named User, that becomes the result of the class declaration. The function code is taken from the "constructor" method(assumed empty if non-existant)
+        2. Stores class methods, such as sayHi in User.prototype
+    · A class could be considered syntactit sugar since it all it does is make an object constructor more readable however, there are subtle differences between a class and a pure function object declaration:
+        1. A function created by "class" is labelled by an internal property [[IsClassConstructor]]: true . The engine checks this property in a variety of places, for example,
+           unlike a regular function, it must be called with "new"
+                class User {
+                    constructor()
+                }
+                alert(typeOf(User)); //function
+                User(); // Error Class constructor cannot be invoked without new 
+                alert(User); // class User{...} -> A string representation of a class constructor starts with "class..."
+        2. Class methods are non-enumerable by default 
+        3. Classes always "use strict". All code inside the class construct is automatically in strict mode 
+        4. Other syntax specific stuff 
+    · CLASS EXPRESSION - Just like functions, classes can be deifned inside another expression, passed around, returned, assigned, ...
+            let User = class MyClass{
+                sayHi(){
+                    alert("Hi");
+                }
+                sayClass(){
+                    alert(MyClass);
+                }
+            }
+            new User().sayClass(); //shows MyClass definition
+            alert(Myclass); // Error, MyClass isn't visible outisde of the class 
+    · GETTERS/SETTERS - Just like literal objects, classes can include getters/setters and computed names for properties and methods:
+            class User {
+                constructor(name){
+                    this._name = name;
+                }
+                get name(){
+                    return this._name;
+                }
+                set name(value){
+                    this._name = value;
+                }
+                ['say' + 'Hi'](){
+                    alert("Hi");
+                }
+            }
+            new User().sayHi(); //Hin
+    ·CLASS FIELDS - Class fields is a syntax that allows to add any properties to classes:
+            class User {
+                name = "John";
+                sayHi(){
+                    alert(`Hi ${this.name}`);
+                }
+            }
+            new User().sayHi(); //Hi John 
+        · Class fields are set on individual objects, NOT User.prototype
+        · BOUNDING METHODS WITH CLASS FIELDS - As we already know, losing "this" is quite common and we can fix this either by passing wrappers to function that modify "this"
+          or binding "this" to the method; Class fields provide another syntax:
+                class Button {
+                    constructor(value){
+                        this.value = value;
+                    }
+                    click = () => {
+                        alert(this.value);
+                    }
+                } 
+                let button = new Button("Hello");
+                setTimeout(button.click, 1000); //Hello -> if we didn't bound "this", with the wrapper in the class, "this" would have been modified by setTimeout
+            · Since class fields reference individual objects, every object will be bound to its own "this"  
+    
+    · CLASS INHERITANCE - Inheritance is a way for one to extend a class onto another class
+        · THE "EXTENDS" KEYWORD - "extends" is a keyword used to create a new child class that extends the parent class, the syntax is:
+                class childClass extends parentClass{
+                    ...
+                }
+            · "extends" works using the [[Prototype]] mechanics, so if a method is not found in childClass, js takes it from parentClass. 
+            · "extends" can be used for any expression AFTER "extends", for instance, a function call that generated the parent class:
+                    function f(phrase){
+                        return class{
+                            sayHi(){alert(phrase);}
+                        };
+                    }
+                    class User extends f("Hello"){}
+                    new User().sayHi(); //Hello 
+        · METHOD OVERLOADING - We can easily replace a parentClass method by redifining it in childClass, however, we usually want to build on top of the original one, 
+          to do that we can use the "super" keyword:
+            · super.method(...) -> Calls the parentClass method, for instance:
+                    class Animal {
+                        constructor(name){
+                            this.name = name;
+                            this.speed = 0;
+                        }
+                        stop(){
+                            this.speed = 0;
+                            alert(`${this.name} stands still`);
+                        }
+                    }
+                    class Rabbit extends Animal{
+                        hide(){
+                            alert(`${this.name} hides!`);
+                        }
+                        stop(){           // calls parentClass method and build on top of it making it so that when it stops, the rabbit hides 
+                            super.stop();
+                            this.hide();
+                        }
+                    }
+                · Arrow functions have no "super", if accessed, it's taken from the outside.
+        · CONSTRUCTOR OVERLOADING - If a childClass has no constructor, accordig to specification, the following empty constructor is generated:
+                class childClass extends parentClass{
+                    constructor(...args){
+                        super(...args);  // calls parentClass constructor 
+                    }
+                }
+            · When overloading a contructor, we need to remember that contructors in inheriting classes must call super(...), and do it before using "this":
+                    class parentClass{
+                        constructor(name){
+                            this.name = name;
+                        }
+                    }
+                    class childClass extends parentClass{
+                        constructor(name, height){
+                            super(name);          // super is called before anything with the arguments it can handle 
+                            this.height = height;
+                        }
+                    }
+                · This happens beacuse a constructor of an inheriting class has an internal property [[ConstructorKind]]:"derived". That label "derived" affects its behaviour with "new":
+                    - When a regular function is executed with new, it creates an empty object and assigns it to "this"
+                    - When a derived constructor runs, expects the parent constructor to do this(up) job
+                  So, a derived class must always class its parentClass contructor, otherwise the object for "this" won't be created.
+        · CLASS FIELD OVERLOADING - Class fields are trickier to overload because of initialization order; Class field is initialized:
+            - Before the contructor for parentClass
+            - Immediatly after super() for childClass
+            · The problem is fixable using getters/setters instead of fields, however problems only show themselves if an overriden field is used in the parent constructor:
+                    class Animal {
+                        name = 'Animal';
+                        constructor(){
+                            alert(this.name);
+                        }
+                    } 
+                    class Rabbit extends Animal{
+                        name = 'rabbit';  //trying to overwrite class field
+                    }  
+                    new Animal(); //Animal
+                    new Rabbit(); //Animal  //the overloading has happened after the constructor call 
+        · SUPER INTERNALS - Since every object has his own "this", a recursive this.__proto__ can't work because it would always call the same "this" in the chain of recursion.
+          To solve this, js adds an internal property for functions: [[HomeObject]]. When a function is specified as a CLASS or object method, its [[HomeObject]] property becomes 
+          that object, then, "super" uses it to solve the parent prototype and its methods. 
+                let animal = {
+                    name: 'animal',
+                    eat() {                          // animal.eat.[[HomeObject]] == animal
+                        alert(`${this.name} eats`);
+                    }
+                };
+                let rabbit = {
+                    __proto__: animal,
+                    name: 'rabbit'
+                    eat(){super.eat();} // rabbit.eat.[[HomeObject]] == rabbit
+                };
+                let longEars = {
+                    name: 'longEars',
+                    __proto__ : rabbit,
+                    eat(){super.eat(); } // longEars.eat.[[HomeObject]] == longEars
+                }
+            · Thanks to [[HomeObject]], every object knows its [[HomeObject]] and takes the parent method from its prototype
+            · When a method that uses "super" is copied, things go wrong:
+                    let animal = {
+                        sayHi(){
+                            alert("I'm an animal");
+                        }
+                    };
+                    let rabbit = {
+                        __proto__: animal,
+                        sayHi(){
+                            super.sayHi();
+                        }
+                    };
+                    let plant = {
+                        sayHi(){
+                            alert("I'm a plant");
+                        }
+                    };
+                    let tree = {
+                        __proto__: plant,
+                        sayHi(): rabbit.sayHi
+                    };
+                    tree.sayHi(); //I'm an animal 
+                · The reason for this is simple:
+                    - When we copy rabbit's sayHi, his [[HomeObject]] is rabbit (and it cannot be changed), hence we copid that as well, so when we
+                      call "super" and go up the chain we go to rabbit's super.
+    
+    · STATIC PROPERTIES AND METHODS - We can assign a method to a class as a whole, such methods are called "static":
+        ·STATIC METHODS
+            class User {
+                static staticMethod(){
+                    alert(this === User);
+                }
+            }
+            User.staticMethod(); //true 
+            // is the same as 
+            class User{}
+            User.staticMethod = function(){
+                alert(this === User);
+            }
+        · The value of "this" in User.staticMethod() call is the class constructor User itself (the object before the dot).
+        · Usually they are used to implement functions that belong to the class as a whole but not to any particular object of it. (for instance, a function used along with sort() to compare the dates of creation of users)
+          or a so-called factory method:
+                class Article{
+                    constructor(title, date){
+                        this.title = title;
+                        this.date = date;
+                    }
+                    static createTodays(){                               // factory function 
+                        return new this("Today's digest", new Date());   // return new "this" -> "this" is the constructor itself 
+                    }
+                }
+                let article = Article.createTodays();
+            · Remember, static methods are called on classes only, NOT on individual objects
+        · STATIC PROPERTIES - They look like regular class properties but prepended by "static":
+                class Article {
+                    static publisher = 'Ben Dover';
+                }
+                alert(Article.publisher); // Ben Dover 
+        · INHERITANCE OF STATIC PROPERTIES & METHODS - Static properties and methods are inherited and work as expected.
+
+    . PRIVATE AND PROTECTED PROPERTIES AND METHODS - In oop, properties and methods are split into 2 groups:
+        - Internal interface -> Methods and properties accessible from other methods of the class but not from the outside
+        - External interface -> Methods and properties also accessible from outside the class 
+        · Protected properties are usually prefixed by an underscore ("_") (a convention used by programmers)
+        · To make something read-only we need to create a getter but not a setter
+                class coffeeMachine{
+                    constructor(power){
+                        this._power = power;
+                    }
+                    get power(){
+                        return this._power;
+                    }
+                }
+            · These are what we may define as "protected" fields, hence, they can be inherited unlike "private" fields.
+        · PRIVATE PROPERTIES - Privates should start with "#". They are only accessible from the inside of the class:
+                class coffeeMachine{
+                    #waterLimit = 200;                                           //private field 
+                    #fixWaterAmount(value){                                      //private method 
+                        if(value < 0 ) return 0;
+                        if(value > this.#waterLimit) return this.#waterLimit;
+                    }
+                    setWaterAmount(value){
+                        this.#waterLimit = this.#fixWaterAmount(value);
+                    }
+                }
+                let coff = new coffeeMachine();
+                coff.#fixWaterAmount(123); //Error, can't access
+            · "#" fields cannot be accessed outside of the class they're defined in, not even inherited classes.
+            · Private fields do not conflict with public ones, we can have both #waterAmount and waterAmount at the same time 
+            · It is not possible to access private fields using "this[#fieldName]" ; That's a limitation to ensure privacy. 
+    
+    · EXTENDING BUILT-IN CLASSES - Built-in classes are extendable just like any class, for instance Array:
+            class powerArray extends Array {
+                isEmpty(){
+                    return this.length === 0;
+                }
+            }
+            let arr = new powerArray(1, 2, 5, 10, 50);
+            alert(arr.isEmpty()); // false
+            let filteredArr = arr.filter((item) => item >= 10);  // even though we call the Array's method, the return array constructor is powerArray
+            alert(filteredArr.isEmpty()); // false 
+        · As you can see, when we call Array's.filter(), the returned array is powerArray, meaning powerArray constructor has been used. This behaviour can be customized
+          adding a static getter "Symbol.species" to the class. If it exists, it should return the constructor that js will use internally to create new entities.
+                class powerArray extends Array {
+                    isEmpty(){
+                        return this.length === 0;
+                    }
+                    static get [Symbol.species](){
+                        return Array;
+                    }
+                }
+                let arr = new powerArray(1, 2, 5, 10, 50);
+                alert(arr.isEmpty()); // false
+                let filteredArr = arr.filter((item) => item >= 10);  // returns an Array using Array's constructor
+                alert(filteredArr.isEmpty()); // Error, no such methods exists in Array
+        · Built-in classes do not inherit static methods. That's because their [[Prototype]] do not reference the classes they inherit from(even though Date() inherit from Object(), it doesn't inherit properties like Object.keys())
+
+    · CLASS CHECKING: "instanceof"
+        · THE "instanceof" OPERATOR - The syntax is "obj instanceof Class", returns TRUE if obj belongs to Class or a class inheriting from it
+                class Rabbit {}
+                let rabbit = new Rabbit();
+                alert(rabbit instanceof Rabbit); //true 
+            · It also works with constructor functions and built-in classes:
+                    function Rabbit(){}
+                    alert(new Rabbit() instanceof Rabbit); //true
+                    let arr = [1, 2, 3];
+                    alert(arr instanceof Array); //true
+                    alert(arr instanceof Object); //true (inherited class)
+                · Normally "instanceof" examines the prototype chain for the check but we can set custom logic for it using the static method "Symbol.hasInstance". The instanceof algorithm roughly works like this:
+                    1. If there is a static method "[Symbol.hasInstance](obj)", just call it and it will return true or false
+                            class Animal{
+                                static [Symbol.hasInstance](obj){
+                                    if(obj.canEat) return true;
+                                }
+                            } 
+                            let obj = {canEat: true};
+                            alert(obj instanceof Animal); //true 
+                    2. Otherwise it checks wether Class.prototype is equal to one of the prototypes in the obj prototype chain. 
+                · ObjA.isPrototypeOf(objB) -> This checks if objA is somewhere in the chain of prototypes of objB, we can thus rephrase "instanceof" as:
+                  Class.prototype.isPrototypeOf(obj)
+        · toString() ON OBJECT PROTOTYPE FOR THE TYPE - toString() can be used as an extended typeof and an alternative to instanceof
+                let objectToString = Object.prototype.toString;
+                let arr = [];
+                alert(objectToString.call(arr)); //[object Array] -> we use toString in the context of this == arr (using call)
+                alert(objectToString.call(123)); // [object Number]
+                // And so on 
+        · Symbol.toStringTag - The behaviour of Object "toString" can be customized using "Symbol.toStringTag":
+                let user = {
+                    [Symbol.toStringTag]: "User";
+                }
+                alert({}.toString.call(user)); // [object User]
+    
+    · MIXINS - A mixin is a class containing methods that can be used by other clases without a need to inherit from it. For instance:
+            let sayHiMixin = {
+                saHi(){
+                    alert(`Hi ${this.name}`);
+                },
+                sayBye(){
+                    alert(`Bye ${this.name}`);
+                }
+            };
+            class User {
+                constructor(name){
+                    this.name = name;
+                }
+            }
+            Object.assign(User.prototype, sayHiMixin); // assign() copies all enumerable properties from sayHiMixin to User.prototype
+            new User("Dude").sayHi(); //Hi Dude
+        

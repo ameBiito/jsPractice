@@ -1,0 +1,114 @@
+· PROTOTYPES AND INHERITANCE
+    
+    · PROTOTYPAL INHERITANCE 
+        · [[PROTOTYPE]] - In js, objects have an hidden property [[Prototype]] that is either "null" or references another objects, that referenced object is called prototype.
+          If you use a property that isn't inside your object, the engine looks for it in the prototype and uses it on your object. There are many ways to set it:
+            - __proto__ -> Sets the prototype to an object: obj.__proto__= prototype
+                    let animal = {eats: true};
+                    let rabbit = {jumps: true};
+                    rabbit.__proto__ = animal;
+                    alert(rabbit.eats); //true
+                · A property or a method like eats is inherited from the parent object
+                · The references cannot be circular
+                · The value of __proto__ can either be an obejct or null, anything else will be ignored
+                · There can be ONLY 1 prototype per object 
+                · Historically __proto__ is a getter/setter for [[Prototype]] 
+                · Writing doesn't use prototype, properties that are set on the child object do not apply to the parent object:
+                        let user = {
+                            name: "John",
+                            surname: "Smith"
+                            get fullname(){
+                                return `${name} ${surname}`;
+                            }
+                            set fullname(value){
+                                [this.name, this.surname] = value.split(' ');
+                            }
+                        };
+                        let admin = {
+                            __proto__ : user,
+                            isAdmin: true
+                        };
+                        alert(admin.fullname); // John Smith
+                        admin.fullname = "Ben Dover";
+                        alert(admin.fullname);  //Ben Dover
+                        alert(user.fullname);   //John Smith 
+            · obj.hasOwnProperty(key) -> Since the for...in loop iterates over inherited properties as well we use this method which returns true if "obj" has its own(not inherited) property named "key"
+
+    · F.PROTOTYPE - New objects can be created using a constructor function, like "new F()"; If F.prototype is an object, then the "new" operator uses it to set [[Prototype]] for the new object
+            let animal = {...};
+            function Rabbit(name){
+                this.name = name;
+            }
+            Rabbit.prototype = animal;
+            let rabbit = new Rabbit('Bugs Bunny'); // rabbit.__proto__=animal since we set the Rabbit's constructor prototype to animal 
+        · Assigning "Rabbit.prototype = animal" literally means that when a new Rabbit is created, assign its [[Prototype]] to animal.    
+        · DEAFULT F.PROTOTYPE, CONSTRUCTOR PROPERTY - Every function has the "prototype" property even if we don't supply it. The defalut "prototype" is an object with the
+          only property "constructor" that points back to the function itself
+                function Rabbit() {
+                    /*default prototype
+                    Rabbit.prototype = {constructor: Rabbit};
+                    */
+                }     
+            · new obj.constructor -> Creates a new object using obj's constructor if we don't happen to know obj's constructor, however, js itself does not ensure the right 
+              "constructor" value since we can change a constructor prototype as we wish:
+                    function Rabbit(){}
+                    Rabbit.prototype = {
+                        jumps: true          // valid since this is an object 
+                    }       
+                    let rabbit = new Rabbit();
+                    alert(rabbit.constructor === Rabbit); //False because the constructor is pointing to another object 
+                · The last line is true because by defalut F.prototype = {constructor: F}, so, it should point to itself by defalut but since we changed it, the equality is now false 
+
+    · NATIVE PROTOTYPES - The "prototype" property is widely used by the core of js iteself: All built-in constructors use it.
+        · Object.prototype - Object is a built-in object constructor function with its own prototype referencing a huge object with a lot of methods and properties.
+          We need to remember that "obj = {}" is equal to "obj = new Object()", so, every built-in object method is taken from Object.prototype.
+        · Other built-in prototypes like Array, Date, Function and others also keep their methods in prototypes. By specification, al of the built-in prototypes have "Object.prototype" on the top.
+        · Primitives aren't objects but, if we try to access their properties, temporary wrappers objects are created using built-in constructors "String", "Number, "Boolean", they provide the methods and then disappear.
+        · CHANGING NATIVE PROTOTYPES - Native prototypes can be modified. For instance, if we add a method to String.prototype, it becomes avaialable to all strings:
+                String.prototype.show = function(){
+                    alert(this);
+                }
+                'BOOM!'.show(); // BOOM! 
+            · The only situation where this is not considered a bad thing to do is "Polyfilling" that is, adding a method to an engine that doesn't support it natively:
+                    if( !String.prototype.repeat ){ // if this method doesn't exist already
+                        String.prototype.repeat = function(n){
+                            return new Array(n+1).join(this);
+                        };
+                    }
+                    alert("La".repeat(3)); //LaLaLa
+        · BORROWING FROM PROTOTYPES - Many methods can be borrowed from prototypes as long as thy don't require that the object is indeed what thay were created to be used on:
+                let obj = {
+                    0: "Hello",
+                    1: "World,
+                    length: 2
+                };
+                obj.join = Array.prototype.join;
+                alert(obj.join(",")); //Hello,World 
+            · Another possibility is to inherit by setting obj.__proto__=Array.prototype so that all Array methods are available in obj. Remember that an object can inherit from 1 object at max.
+
+    · PROTOTYPE METHODS - The use of __proto__ is considered outdated and somewhat depreacated since there are new ways to use inheritance:
+        · Object.getPrototypeOf(obj) -> Returns the [[Prototype]] of obj
+        · Object.setPrototypeOf(obj, proto) -> Sets the [[Prototype]] of obj to proto
+        · Object.create(proto[, descriptors]) -> Creates an empty object with given "proto" as [[Prototype]] and optional property descriptors
+                let animal = {eats: true};
+                let rabbit = Object.create(animal, {
+                    jumps: {
+                        value: true
+                    }
+                }); // same as let rabbit = {__proto__: animal, jumps: true}
+                alert(Object.getPrototypeOf(rabbit) === animal); //true
+                Object.setPrototypeOf(rabbit, {}); // the prototype of rabbit is now {}
+            · Object.create() can be used to perform an accurate cloning:
+                    let clone = Object.create(
+                        Object.getPrototypeOf(src), Object.getOwnPropertyDescriptors(src) // this is a perfect copy of the orginal, including properties, enumerable and not,
+                        );                                                                // data properties, setters and getters - everything
+            · Object.create() can be used to create empty objects that don't inherit anything from the Object.prototype
+                    let obj = Object.create(null); // empty object with no prototype
+                    alert(obj); // Error, no toString() method exists 
+                · This kind of object is used exclusively as a dictionary(to store values we need when we don't want to use a map). Note that however
+                  many methods are of kind Object.something, these methods will work with our plain object:
+                        let germanDictionary = Object.create(null);
+                        germanDictionary.hello = "Hallo";
+                        germanDictionary.bye = "Tschuss";
+                        alert(Object.keys(germanDictionary)); // hello, bye
+                        

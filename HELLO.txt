@@ -1,0 +1,17 @@
+js programs can be inserted almost anywhere into an html docunent using the <script> tag:
+    <!DOCTYPE HTML>
+    <html>
+    <body>
+        <p>Before the script</p>
+
+        <script>
+            alert('Hello world!');
+        </script>
+
+        <p>After the script</p>
+    </body>
+    </html>
+
+
+it is, however, better have a path to a script instead of the script itself:
+    <script src = "pathToScript.js"></script>

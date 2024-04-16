@@ -1,0 +1,321 @@
+· ADVANCED WORKING WITH FUNCTIONS
+
+    · REST PARAMETERS AND SPREAD SYNTAX - This is about functions that support an arbitrary number of arguments
+        · REST PARAMETERS (...) - A function can be called with any number of arguments, no matter how is defined; we can gather the excess arguments using "...rest" which is an array containing
+          all the excess parameters the function definition didn't request:
+                function sumAll(...args){
+                    let sum = 0;
+                    for(let arg of args) sum += arg;
+                    return sum;
+                }
+                sumAll(1, 2, 3, ..., n); 
+        · The "arguments" variable contains all function's argument by their index. "arguments" is an array-like and iterable, so, it doesn't support Array methods:
+                function showName(){
+                    alert( arguments.length );
+                    alert(arguments[0]);
+                    alert(arguments[0]);
+                }
+                showName("Julius", "Caesar"); // 2 , Julius, Caesar
+                showName("Julius"); // 1 , Julius, undefined 
+            · Arrow functions do not have "arguments" and if called, will either thow an error or will take it from the mother function
+        · SPREAD SYNTAX - It "expands" an iterable objects into its value; uses the "...varName" notation:
+                let arr = [1, 3, 5];
+                let arr2 = [-3, 7, 4];
+                Math.max(arr);     //NaN
+                Math.max(...arr, ...arr2);  // 7
+                Math.max(...arr, 23, ...arr2); // 23
+            · Can also be used to merge arrays:
+                    let arr1 = [1, 4, 5];
+                    let arr2 = [-3, 98, 2];
+                    let merged = [0, ...arr1, 8, ...arr2]; // [0, 1, 4, 5, 8, -3, 98, 2]
+                · Can be used for any iterable:
+                        let str = "Hello";
+                        let chars = [...str]; // ['H', 'e', 'l', 'l', 'o']
+                    · Can also do the same for an object
+                            let obj = {a: 1, b: 2};
+                            let objCopy = {...obj}; // objCopy = {a: 1, b: 2}
+
+    · VARIABLE SCOPE, CLOSURE 
+        · NESTED FUNCTIONS can be used in very interesting way, for example, they can be a return value:
+                let makeCounter(){
+                    let count = 0;
+                    return function(){
+                        return ++count;
+                    };
+                }
+                let counter = makeCounter();
+                alert( counter() ); //0
+                alert( counter() ); //1 
+                alert( counter() ); //2
+        · LEXICAL ENVIRONMENT - The Lexical Environment is an internal (hidden) object which consist of 2 parts:
+            1. Environment Record - an object that stores all local variables AS ITS properties(and some other informations like "this")
+            2. A reference to the outer Lexical Environment, the one associated with outer code
+            · The Lexical Environment changes during the execution:
+                1. When the script starts, the Lexical Environment is pre-populated with all the declared variables, initially they're in an "unitialized" state, that is, an internal
+                   state that tells the engine the variable exists but it cannot be referenced until it is declared with "let".
+                2. Then "let" appears, at this point the variable can either have a value "undefined" or the value we chose for it
+            · The way the Lexical Environment treats functions is different from variables; even though they're still a value , a function declaration is INSTANTLY FULLY INITIALIZED.
+              That's why we can use a function before its declaration in the code. Naturally, this only applies to declarations, not expressions (when we assign function value to a variable)
+            · When a function runs, at the beginning of the call, a new Lexical Environment is created to store local variables and parameters of the call; this new Lexical Environment
+              will be an inner Environment to the Global one and its outer reference will thus be the Global one(the Global outer reference is null).
+              When the code inside the function wants to access a variable, the inner Lexical Environment is searched first, then the outer one and so on until the Global one.
+            · Every function remembers the Lexical Environment they were made in because every function has an hidden property [[Environment]] that keep reference to the Lexical Environment they were made in.
+              This is why we can assign a variable a function, we're passing (among other things) the [[Environment]] property which makes it so that the call is made in the original Environment (the counter() example above).
+        · CLOSURE - a Closure is a function that remembers its outer variables and can access them. In js, all functions are naturally Closures. That is: They automatically
+          remember where they were created using an hidden [[Environment]] property, and then their code can access outer variables.
+        · GARBAGE COLLECTION - Just like a regular object, when a Lexical Environment is not-reachable, it's disposed of.
+
+    · VAR - The "var" declaration is similair to "let". however, var is completely different and mostly not used today unless you know what you're doing
+        · Var has no block scope, that is, they're visible through blocks:
+                while(true){
+                    var test = "Hello";
+                    let tset = "olleH";
+                }
+                alert(test); //Hello
+                alert(tset); //Error: tset is not defined 
+            · If a code block is inside a function, then its scope is limited to the function
+        · We can redeclare a "var" variable 
+                var name = "Peter";
+                var name = "John"
+                alert(name); //John
+        · "var" variables can be declared below their use, that is, they behave like a function and can thus be used before being declared(this behaviour is also known as hoisting): 
+                phrase = "Hello";  
+                alert(phrase);    //NOT an error
+                var phrase;
+            · Assignments are not hoisted:
+                    alert(phrase)  // undefined (variable is declared because hoisted but not defined until next line)
+                    var phrase = "Hello";
+        · IIFE - Immediatly-invoked function expression was a way to emulate a block-invisibility for var, it looks like this:
+                (function(){ // the parentheses before function make it an expression and can thus be used at the moment of declaration 
+                    var message = "Hello";
+                    alert(message);
+                })();  // <- we call the function immediatly 
+    
+    · GLOBAL OBJECT - The Global Object provides variables and functions that are available anywhere(by defalut those that are built in the engine or the environment). 
+      In a browser it is names "Window", for Node.js, it is "Global". "globalThis" is a standardized name for it (supported by most engines).
+      All properties of the Global Object can be accessed directly:
+            alert("Hello");
+            window.alert("Hello"); // they're the same 
+        · Only the variables declared with "var" become "globalThis" properties(NOT "let"/"const")
+        · We can make a value available globally defining it as "globalThis" property:
+                globalThis.currentUser = {
+                    name: "John"
+                };
+        · We use the "globalThis" to test for support of modern language features so that we can create polyfills:
+                if(!globalThis.Promise){
+                    globalThis.Promise = ...//custom implementation of Promise 
+                }
+
+    · FUNCTION OBJECT, NFE - In js, functions are of type Object or, for imagination purposes, action objects 
+        · A function's name is accessible as the "name" property:
+                function sayHi{...}
+                alert(sayHi.name); //sayHi
+            · This is called a "contextual name", if the function doesn't provide one, then it is figured out from the context 
+            · Object's methods have "name" as well:
+                    let user = {
+                        sayHi(){...},
+                        sayBye: function(){...}
+                    };
+                    alert(user.sayHi.name);  //sayHi
+                    alert(user.sayBye.name); //sayBye
+            · There are cases when there's no way to figure out the right name, in that case "name" is empty
+                    let arr = [function(){}];
+                    alert(arr[0].name); // <empty string>
+        · The "length" property returns the number of function parameters(...rest parameters are not counted)
+                function f1 (a,b){}
+                function f2 (a, b, ...rest){}
+                alert(f1.length); // 2
+                alert(f1.length); // 2
+            · Sometimes is used for instrospection(ability to examine the type of propeties of an object at runtime) in function that operate on other functions
+        · We can also add custom properties to a function:
+                function sayHi(){
+                    alert("Hi");
+                    sayHi.counter++; // to count how many times this function is run 
+                    let counter = 0; //sayHi.counter is not touched by this
+                }
+            · These properties do not define a variable, in other words, it is legal to have a variable named the same way inside the function since they "live in distant worlds"
+        · NFE or "Named Function Expression" is a term for function expressions that have a name:
+                let sayHi = function func(who){
+                    alert('Hello ${who}`);
+                };
+                sayHi("John"); 
+            · There are 2 reasoon for which we may want an NFE:
+                1. It allows the function to reference itself (nested calls, recursion)
+                2. It is not visible outside of the function 
+
+    · THE "new Function" SYNTAX - There's one rarely used way to create a function, and sometimes it's the only way of doing something
+        · SYNTAX - The syntax is : let func = new Function ([arg1, arg2, ...argN], functionBody); -> The function is created with the given arguments and "functionBody":
+                let sum = new Function('a', 'b', 'return a+b');
+                alert(sum(1, 2)); //3
+                let sayHi = new Function('alert("Hi")'); // no arguments, only body 
+                sayHi(); // Hi
+            · As you can see, the function is created at runtime from strings, this way we can literally use any string to make a function  
+        · CLOSURE - Generally a function has its own [[Environment]], however, a function created using "new Function" hasn't its own, so its Lexical Environment is the Global one
+          so, things like this happen:
+                function getFunc(){
+                    let val = 'test';
+                    let func = new Function('alert(val)');
+                    return func;
+                }
+                getFunc(); // Error, val is not defined -> happens because func is looking for val in the Global Lexical environment
+        
+    · SCHEDULING - We may decide to not execute a function right now but a certain time later: That's called "Scheduling a call"; there are 2 methods for it:
+        1· setTimeout(func|code, [delay], [arg1], ..., [argN]) -> Allows us to run a function once after the interval of time.
+          - func|code -> reference to function or a string of code to execute. Usually a function(remember, no brackets, it's a reference)
+          - delay -> the delay before the run in milliseconds, default 0
+          - arg1, arg2, argN -> Arguments for the function
+                function sayHi(phrase, who){
+                    alert(`${phrase} ${who}!`);
+                }
+                setTimeout(sayHi, 1000, "Hello", "John"); // Hello John! (after 1 second delay)
+                setTimeout('alert("Hello John!")', 1000); // Hello John! (after 1 seconds delay, function body created from string)
+                setTimeout(() => alert("Hello"), 1000); // Recommended version of what's above 
+            · clearTimeout(timerId) -> Is used to cancel a setTimeout() function execution using the "timerId" setTimeout() returns:
+                    let timerId = setTimeout(...);
+                    clearTimeout(timerId);
+        2· setInterval(func|code, [delay], [arg1], ..., [argN]) -> Runs the function regularly after given interval of time, the argument meaning is the same as setTimeout():
+            · clearInterval(timerId) -> Stops the function setInterval() repeats:
+                    let timerId = setInterval(() => alert('tick'), 1000);
+                    setTimeout(() => {clearInterval(timerId); alert("Stop"); },  5000); 
+        · Nested setTimeout() is a more flexible setInterval(), this way you can modify the next call ,if required, like in the example:
+                let delay = 5000;
+                let timerId = setTimeout(function request(){
+                    //...request data from a server...//
+                    ...
+                    if(//the request fails due to overload){
+                        delay *= 2;
+                    }
+                    timerId = setTimeout(request, delay);
+                }, delay);
+            · Other than being more flexible, it is also more exact, in setInterval(), the time between repetitons doesn't count the time the function takes to execute, so, if the 
+              function happens to take longer than the delay, the next call will happen immediatly after the function is done, whereas the nested setTimeout() will wait for the 
+              function to finish and then will start the counter for the delay between calls.
+        · setTimeout(func, 0) or setTimeout(func) -> This schedules the execution of func as soon as possible, but, the scheduler will invoke it only after the currently executing script is done:
+                setTimeout(() => alert("World"));
+                alert("Hello"); // Hello World 
+            · This is because the scheduler will look at the calendar only after is done with the main script 
+
+    · DECORATORS AND FORWARDING
+        · TRANSPARENT CACHING - Instead of adding a caching functionality to a function, we can create a wrapper function that does this; We can do this passing a function as an argument 
+          and mapping its values in a MAP/SET. The behaviour of this additional function gives it a name: A "Decorator", that is, a fucntional that takes another function and alters its behaviour:
+                function slow(x){
+                    //CPU intensive calculations
+                    alert(`Called with ${x}`);
+                    return x;
+                }
+                function cachingDecorator(func){   // The decorator function takes a function as a parameter
+                    let cache = new Map();
+                    return function(x){
+                        if(cache.has(x)){
+                            return cache.get(x);
+                        }
+                        let result = func(x);  // Otherwise call func 
+                        cache.set(x, result);
+                        return result;
+                    };
+                }
+                slow = cachingDecorator(slow);  // slow is now a reference to cachingDecorator which calls slow(x) and caches its result
+                slow(1);  // slow(1) is called and its result is cached 
+                slow(1); // the return is immediate because the result is got from cache
+            · Usually it's better to use a wrapper because: 
+                · A wrapper is reusable (for other functions)
+                · The caching logic is separate
+                · We can combine multiple decorators 
+        · func.call(context, arg1, ..., argN) -> Runs func providing the first argument as "this" and the next as the func's "arguments":
+                func(1, 2, 3);
+                func.call(obj, 1, 2, 3); //These function do the same thing but func.call() sets "this" to "obj"
+            · As a better example look:
+                    function sayHi(phrase){
+                        alert(`${phrase} ${this.name}`); // Look at "this"
+                    }
+                    let user = {name: "John"};
+                    let admin = {name: "Admin"};
+                    sayHi.call(user, "Hi"); // Hi John
+                    sayHi.call(admin, "Welcome"); // Welcome admin 
+        · func.apply(context, argArr) -> Runs the func setting "this" = context and using "argArr" as an array of arguments. Hence we can say that:
+                func.call(context, ...args);
+                func.apply(context, argArr); // Are almost equivalent 
+            · The only difference between the 2 is that ...args allows to pass any iterable while argArr accepts only array and array-like arguments
+        · Passing all arguments along with the context to another function is called CALL FORWARDING, in its simplest form:
+                let wrapper = function (){
+                    return func.apply(this, arguments)
+                }
+            · When an external calls wrapper, it's indistinguishable from the original func
+        · BORROWING A METHOD 
+            · Say we have an hash function that wants to return its arguments joined (using join()) as a string:
+                    function hash(){
+                        return arguments.join(); // Error, argumnets.join() is not a function (because arguments is not an array)
+                    }
+            · We can use a trick called METHOD BORROWING to make it possible:
+                    function hash(){
+                        alert( [].join.call(arguments) ); // 1, 2
+                    }
+                    hash(1, 2)
+                · This works because of how "arr.join(glue)" works:
+                    1. Let "glue" be the first argument or, if no argument then a comma(",")
+                    2. Let "result" be an empty string
+                    3. Append "this[0]" to "result"
+                    4. Append "glue" and "this[1]"
+                    5. append "glue" and "this[2]"
+                    6. Do so until "this.length" items are glued
+                    7. Return "result"
+
+    · FUNCTION BINDING - When you pass object methods as callbacks(functions used in functions), there's a known problem, losing "this"; here'ss how to fix it
+        · A WRAPPER -> Using a wrapper works because the function receives information from the outer Lexical Environment:
+                let user = {
+                    firstName: "John",
+                    sayHi(){
+                        alert(`Hi, ${this.firstName}`);
+                    }
+                };
+                setTimeout(user.sayHi(), 1000); // Hi undefined (doesn't work because this is set to the global object)
+                setTimeout(function(){
+                    user.sayHi();  //Hi John(works because receives user from the outer Lexical Environment)
+                }, 1000);
+                setTimeout(() => user.sayHi(), 1000); // same as before but shorter 
+        · BINDING 
+            · func.bind(context) -> The result is a special "function-like" object, that is callable as a function andd transparently passes the call to func setting "this" = context
+                    let user = {
+                        name: "John"
+                    };
+                    function func(){
+                        alert(this.name);
+                    }
+                    let funcUser = func.bind(user);
+                    funcUser(); //John -> now funcUser has a bind to user's "this"  
+                · Can also be used effectively with an object method:
+                        let user = {...};
+                        let sayHi = user.sayHi.bind(user);
+                        sayHi(); //Hello John -> can call user's method without calling the object 
+                    · If an object has many methods and we plan to use them all, we can bind all of them in a loop:
+                            for(let key in user){
+                                if(typeof(key) == 'function'){
+                                    user[key] = user[key].bind(user);
+                                }
+                            } 
+        · PARTIAL FUNCTIONS - We can bind not only "this" but also arguments creating functions that require only a part of the arguments:
+                let bound  = func.bind(context, [arg1], ..., [argN])
+            · This allows to bind context as "this" and starting arguments of the function, for instance:
+                    function mul(a, b){
+                        return a*b;
+                    }
+                    let double = mul.bind(null, 2);
+                    alert( double(3) ); // = mul(2, 3) = 6
+                · This cretes a new function "double" that passes calls to "mul" fixing "null"(since we don't need "this") as context and "2" as the fist argument
+            · A function cannot be re-bound, it remembers the context and arguments given only at creation time
+
+    · ARROW FUNCTIONS REVISITED - Arrow functions are not only beautiful because they're short, they have a ton of useful features:
+        · ARROW FUNCTIONS HAVE NO "THIS" - If "this" is accessed from an arrow function, it is taken from the outside 
+                let group = {
+                    title: "Group",
+                    members: ["John", "Pete", "Ann"],
+                showList() {
+                    this.members.forEach(
+                        student => alert(this.title + " " + student)
+                    );
+                  }
+                };
+                group.showList(); // shows members using the outer "this" so that "this.title" === "group.title"
+            · Since they don't have a "this", they cannot be called with "new" and thus cannot be used as constructors
+        · ARROW FUNCTIONS HAVE NO "ARGUMENTS" - Meaning they don't have the "arguments" variable (the array that contains normal function's arguments)
+        

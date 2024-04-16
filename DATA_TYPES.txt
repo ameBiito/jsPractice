@@ -1,0 +1,541 @@
+DATA TYPES  
+
+    · METHODS OF PRIMITIVES  
+        In order to make primitives beheave like an objects (mostly, have methods)we have a solution:
+            1. Primitives are still primitives
+            2. The language allows access to methods and properties of strings, numbers, booleans and symbols
+            3. In order for that to work, a special object wrapper that provides the extra functionality is created, and then, is destroyed
+            They're different for each primitive and are called (notice the capital letter) String, Number, Boolean, Symbol, BigInt
+            · As an example:
+                    let str = "hello";
+                    alert(str.toUpperCase()); //HELLO
+                · Here's a rundown of what happens:
+                    1. The string "str" is a primitive. So, in the moment of accessing its property, a special object is created that knows the value of the string, and has methods, like toUpperCase()
+                    2. That method runs and returns a new string
+                    3. The special object is destroyed, leaving the primitive "str" alone
+
+    · NUMBERS   
+        In js there are 2 types of numbers: Regular Numbers(2^53+-1) and BigInt(arbitrary big number)
+        · Instead of writing many zeroes, you can use "e", both right and left of the comma:
+                let bilion = 1000000000;
+                let trilion = 1.32e12;  // 1trilion320milion 
+                let micron = 1e-6; // 0.000001
+        · toString(base) is a method that represents the primitive upon it's called in the desired base:
+                let num = 255;
+                alert(num.toString(16)); // 0xff
+                alert(num.toString(2));  // 11111111
+        · ROUNDING - There are several built-ins used for rounding:
+            · Math.floor -> 3.1 becomes 3 and -1.1 becomes -2
+            · Math.ceil -> 3.1 becomes 4 and -1.1 becomes -1
+            · Math.round -> Round to the nearest int; 3.1 becomes 3, 3.6 becomes 4
+            · Math.trunc -> Removes anything after the decimal point; 3.1 becomes 3, 3.6 becomes 3
+            · .toFixed(n) -> Rounds the numbers to n digits after the point, rounds it and returns it as a string 
+            · Rounding errors are inevitable for fractions because of the way binary represents them, this is solved by roundig to the nearest possible number, which then gives us weird values if we want to represent a larger amount of digits:
+                    alert(0.1 + 0.2 == 0.3); //false
+            · isNan(value) -> Returns true if a value if NaN, this function is needed because NaN === NaN is false
+            · isFinite(value) -> Returns true if a value is not NaN/Infinity/-Infinity (can be used to validate a string into a number)
+            · Object.is(val1, val2) -> Returns true if val1 === val2, works with NaN as well: Object.is(NaN, NaN); //true 
+        · PARSING
+            Parsing is the process by which we read and "understand" a certain value, separating what we need from what we don't
+            · parseInt() and parseFloat() read a string and return the Int or Floating value
+                    alert(parseInt('100$')); //100
+                    alert(parseFloat('12.5em'));  // 12.5
+                    alert(parseInt('a123')); // NaN, the first symbol stops the process 
+
+    ·STRINGS
+        The internal format for encoding is always UTF-16, not tied to the page encoding
+    · QUOTES - single and double quotes work the same, backticks, on the other hand, allow us to embed ${...} and they can span multiple lines
+    · We can use str.at(pos) to get the same result as str[pos], the only difference is that in .at(pos), pos can be a negative number, in that case, it's counted from the end 
+    · Strings are immutable in js:
+            let str = "hello";
+            str[0] = "H"; //error 
+    ·SEARCHING FOR A SUBSTRING - there are multiple ways to search for a substring:
+        · str.indexOf(subStr, pos) -> it looks for the given subStr from the given position on; returns the position where the match was found or -1
+        · str.lastIndexOf(subStr, pos) -> does the same thing but starting from the end
+        · str.includes(subStr, pos) -> works the same but returns a bool 
+        · str.startsWith(subStr) and str.endsWith(subStr) -> these do exactly what they say, one starts from the begininng, the other from the end
+    · GETTING A SUBSTRING 
+        · str.slice(start, end) -> Returns the part of the string from start(included) to end (not included), negative values are accepted as it will start from the end instead of the beginning
+        · str.substring(start, end) -> The same as slice but start can be greater than end, as it simply swaps them, however, negative arguments are not suppoerted and are treated as a zero
+        · str.substr(start, length) -> Returns the part of string from start(inclusive) for a given length; the first argument can be negative
+    · COMPARING STRINGS - Strings are compared character-by-charcter in numerical order
+        · A lowercase is bigger than an uppercase (encoding)
+        · str.codePointAt(pos) -> Returns a decimal number representing the code for the character at postion pos ( z = 120, Z = 90)
+        · String.fromCodePoint(code) -> Creates a character from code (String.fromCodePoint(65) // A)
+        · str.localeCompare(str1) -> Compares str and str1 using the local alphabet so that other languages can be compared as well(letters like ä are bigger in the UTF, which is not alphabetically correct)
+    
+    · ARRAYS 
+        Arrays are used to store ordered collections; in js they're declared as such:
+                let arr = new Array();
+                let arr = [];            //both declare a new empty array
+        · They can store different elements of any type and they may end with a trailing comma:
+                let arr = ["Apple", {name: "John"}, 123, true, function() {alert("Hello")}, ];
+        · arr.at(index) -> returns element at index, allows negative values and in such case, it starts from the end:
+                let arr = ["Apple", "Plum", "Apricot", ];
+                alert(arr.at(-1));  //"Apricot"
+        · arr.pop() -> Extracts the last element of arr, removes it from arr and returns it
+        · arr.push(elem) -> Appends elem to the end of the array(can append multiple values at once arr.push(elem1, elem2, ..., elemN))
+        · arr.shift() -> Extracts the first element of arr, removes it from arr and returns it 
+        · arr.unshift(elem) -> Adds elem to the beginning of arr (can add multiple values at once arr.unshift(elem1, elem2, ..., elemN))
+        · INTERNALS 
+            · Arrays behave like an object because they are one, an object optimized to manage ordered queues of data. 
+            · They are copied by reference
+            · There are ways to MISUSE arrays: 
+                · Add a non-numeric property -> arr.test = 5;
+                · Make holes -> arr[1] = 10; arr[1000] = 1; with nothing in between(this is because thr js engine tries to store arrays in a contiguos block of memory)
+                · Fill the array in reverse order -> arr[1000] = 1; arr[999] = 0;
+        ·LOOPS 
+            · Instead of using a for loop you can use a for...of loop:
+                    let arr = [1, 2, 3];
+                    for(let elem of arr){
+                        alert(elem); //1,2,3
+                    }
+            · Technically, you could use a for...in loop, however, there are potential problems with it:
+                    · The for..in loops iterate over all properties of an object, not only numeric ones; this is a problem if we encounter array-like objects who may behave like arrays but have methods and properties we don't need and that may give us problems
+                    · The for...of is optimized for arrays, it is 10-100 times faster than a for-in for an array
+        · toString
+            ·Arrays do not have Symbol.toPrimitive, neither valueOf, they implement only toString coversion, so:
+                    alert([] + 1); //1
+                    alert([1]+1); //11
+                    alert([1,2]+1); //1,21
+    · ARRAY METHODS
+        · ADD/REMOVE 
+            · arr.splice(start[, deleteCount, elem1, ..., elemN]) -> Modifies arr starting from the index start (indexes may be negative): removes deleteCount number of elements (inclusive) and then inserts elem1, ...2, ...N. Returns the array of removed elements:
+                    let arr = ["I", "am", "a", "person", ];
+                    arr.splice(2, 2, "an", "animal" );      //removes from index 2 2 elements and adds "an" and "animal to the array
+                    alert(arr); // ["I", "am", "an", "animal",]
+                    let removed = arr.splice(0,2);
+                    alert(removed); // ["I", "am"];
+                    removed.splice(1,1); // ["I"]
+                    removed.splice(1, 0, "am", "sitting");    // it can also be used to insert elements in any given index without deleting anything
+                    alert(removed); // ["I", "am", "sitting"]
+            · arr.slice([start], (end)) -> Returns a new subarray that goes from start(inclusive) to end (non-inclusive) (indexes may be negative); can be useful to copy the whole array: 
+                    let arr = [1, 2, 3, 4, 5,];
+                    alert(arr.slice(1, 3));  // [2, 3]
+                    let copy = arr[0, arr.length];   
+            · arr.concat(arg1, arg2, ..., argN) -> Returns a new array containing the arguments: the arguments argN can be both arrays and values
+                · If an array-like object is put in the args, it is copied as a whole; In order to copy only its values, it need an additional method Symbol.isConcatSpreadable, then it will be treated as an array by concat:
+                        let arr = [1, 2,];
+                        let arrayLike = {
+                            0: 1,
+                            1: 3,
+                            [Symbol.isConcatSpreadable]: true,
+                            length: 2,
+                        };
+                        let arrayLike2{...//some implentation without the Symbol...};
+                        alert(arr.concat(arrayLike, arraLike2)); // [0, 1, 1, 3, [object Object]]
+            · arr.forEach(function()) -> Allows to run a function for each element:
+                    [1, 2, 3].forEach(alert); // alert for each element individually 
+                    [1, 2, 3].forEach((item, index, array) => {
+                        alert(`${item} at index ${index} is contained in ${array});
+                    });
+        ·SEARCHING IN AN ARRAY 
+            · arr.indexOf(item, index) -> Looks for item from index on an returns item's index if found, -1 otherwise (uses strict equality)
+            · arr.lastIndexOf(item, from) -> Same thing but right from left
+            · arr.includes(item, from) -> Looks for item from index from and returns bool (is able to handle NaN)
+            · arr.find(function(item, index, array)) -> If it returns true, the search is stopped and the item is returned, otherwise, undefined is returned (it is very useful for arrays of objects)
+                    let users = [
+                        {id:1,  name: "Peter"},
+                        {id:2, name: "John"},
+                    ]
+                    let user = users.find(item => item.id == 1);
+                    alert(user.name); //"Peter"
+            · arr.findIndex(function(item, index, array)) and arr.findLastIndex(function(item, index, array)) are the same but return the index instead of the element 
+            · arr.filter(function(item, index, array)) does the same but for arrays where more elements may have the same result; returns an array of all the matching elements 
+        · TRANSFORMING AN ARRAY
+            · arr.map(function(item, index, array)) -> Calls the function for every element and returns the array of results:
+                    let ages = [John , Peter, Max].map( item => item.age);
+                    alert(ages); // [30, 28, 21] (these are invented age for the objects contained in the array)
+            · arr.sort(function) -> Sorts the array in place; if used without function, sorts using the lexicographic string order, for numbers we need to supply our own function:
+                    function compareNumeric (a, b){
+                        if(a > b) return 1;
+                        if ( a == b) return 0;
+                        if(a < b) return -1;        
+                    }
+                    let arr = [2, 15, 1];
+                    arr.sort(compareNumeric); // [1, 2, 15]
+                    arr.sort( (a, b) => a - b); //Works the same
+            · arr.reverse() -> Reverses the elements of the array: [1, 2, 3].reverse() // [3, 2, 1]
+            · str.split(delimiter, maxLength) -> Returns an array of maxLength elements; the elements are divided when delimiter is encountered:
+                    let arr = "John, Pete, Max".split(",", 2); 
+                    alert(arr); // ["John", "Pete"]
+            · arr.join(glue) -> Returns a string using the "glue" as delimiter between the elements (reverse of split)
+            · arr.reduce(function(accumulator, item, index, array){...}, [initial]) -> accumulator is the result of previous function calls(equals initial the first time if provided); as function is applied, the result of the 
+              previous function is passed to the next one as the first argument (if no initial argument is provided, the first element is the first argument and calculation starts from the 2nd):
+                    let arr = [1, 2, 3, 4, 5,];
+                    let result = arr.reduce((sum, current) => sum + current, 0);
+                    alert(result); //15
+            · arr.reduceRight(function(accumulator, item, index, array){...}, [initial]) -> Does the same but right from left
+            · Array.isArray(arr) -> Returns true if arr is an array, false otherwise
+            · thisArg -> Can be used for several methods (find, filter, map, ...)(NOT sort); the value of thisArg becomes "this" for "func"(basically, i dont get it)
+    · ITERABLES - Iterable objects are a generalization of arrays; such concep allows us to make any object usable in a for...of loop(which is good)
+        · Symbol.iterator -> To make an object iterable, we need to add Symbol.iterator to it:
+            1. When for...of starts, it calls that method once (error if not found). The method must return an iterator(an object with a method "next")
+            2. Onward, for...of works only with the iterator
+            3. When for...of wants the next value, calls the method "next" of the iterator 
+            4. The result of "next" must have the form {done: Boolean, value: any} (done == true, loop is finished; value is the next value)
+                    let range = {from: 1, ..., to: 5};
+                    range[Symbol.iterator] = function(){
+                        return {
+                            current: this.from, 
+                            last: this.to,
+                            next() {
+                                if (this.current <= this.last){
+                                    return {done: false; value: this.current++};
+                                } else {
+                                    return {done: true};
+                                }
+                            }
+                        }
+                    }
+                    for(let num of range){
+                        alert(num);            //1, 2, 3, 4, 5
+                    }
+                If you were to define Symbol.iterator inside the range object there would be no problems, made exception for the fact that you could have only one for...of loop over the object at the time because they'll share the iteration state 
+        · Strings are iterable with a for...of
+        · Array.from(obj[, mapFnm(elemt, index), thisArg]) -> Returns an arraylike object, giving obj Array's properties; takes the object, examines it for being an iterable or array-like, then makes a new array and copies all items to it.
+          mapFnm can be a function that will be applied to each element before adding it to the array, thisArg allows us to set "this" for it.
+                let range = {...};
+                let arr = Array.from(range, num => num*num);
+
+    · MAP AND SET 
+        · MAP - Map is a collection of keyed data items just like object, the main difference being that Map allows keys of any type, its main methods and properties are:
+                · new Map() -> Creates a new Map
+                · map.set(key, value) -> Stores the value by the key
+                · map.get(key) -> Returns the value by the key, undefined if key doesn't exist
+                · map.has(key) -> Returns bool if it exists
+                · map.delete(key) -> Removes the element by the key
+                · map.clear() -> Removes everything in the map
+                · map.size -> Returns the current element count
+                        let map = new Map();
+                        map.set('1', "str");
+                        map.set(1, "num");  //numeric keys are possible
+                        map.set(true, "bool"); //as well as boolean keys
+                        alert(map.get(true));  // bool
+                    although we can use map[key] = var, we shouldn't; doing so implies that map is used as an object, so, it loses all of its useful optimizations
+            · Map can also use objects as keys (thing we can't do with objects) as well as NaN since they implement a key equality algorithm that roughly works as ===
+            · Every map.set returns the map itself, so we can chain the calls:
+                    map.set("1", "str").set(1, "num").set(true, "bool");
+        · ITERATION IN A MAP - There are manly 3 methods:
+            · map.keys() -> Returns an iterable for keys
+            · map.values() -> Returns an iterable for values
+            · map.entries() -> Returns an iterable for entries [key, value]; it's used by defalut in for...of
+                    let map = new Map([
+                         ["first, 500],
+                         ["second", 230]
+                    ]);
+                    for(let entry of map.keys()){
+                        alert(entry); // first, second
+                    }
+                    for(let entry of map.values()){
+                        alert(entry); // 500, 230
+                    }
+                    for(let entry of map.entries()){
+                        alert(entry); // first,500 , second,230
+                    }
+                · Insertion order is preserved when loopig through(unlike an object)
+            · Object.entries(obj) -> Returns an array of key/value pairs for an object:
+                    let obj = {val: 1, val2: 2};
+                    let map = Object.entries(obj);
+                    alert(map.entries()); // val,1 , val2,2
+            · Object.formEntries -> Given an array of [key, value] pairs, it creates an object from them:
+                    let prices = Object.fromEntries([
+                        ["banana", 1],
+                        ["orange", 2],
+                        ["meat", 5]]);
+                    alert(prices.banana); //1
+                · Can be used to create objects from maps entries
+                        let map = new Map();
+                        map.set('banana', 1);
+                        map.set('orange', 2);
+                        map.set('meat', 4);
+                        let obj = Object.fromEntries(map.entries());  // can also be Object.fromEntries(map)
+                        alert(obj.banana); //1
+        · SET - Set is a special type collection, "set of values" (without keys) where each value may occur only once; its main methods are:
+            · new Set([iterable]) -> Creates a new set and if an iterable object (usually an array) is provided, copies its values into the Set
+            · set.add(value) -> Adds a value to set, returns the set itself
+            · set.delete(value) -> Removes the value; reuturns true if value existed at the moment of deltetion, otherwise, false
+            · set.has(value) -> Returns bool if value exists in the set
+            · set.clear() -> Removes everything from the set
+            · set.size -> Returns the element count
+                    let set = new Set();
+                    let john = {name: "John"};
+                    let mary = {name: "Mary"};
+                    let peter = {name: "Peter"};
+                    set.add(john);
+                    set.add(mary);
+                    set.add(peter);
+                    set.add(john);
+                    for(let user of set){
+                        alert(set.size)  //3
+                        alert(user.name);     //John Mary Peter  
+                    }
+            · ITERATION OVER SET - We can loop through a set with for...of or forEach()
+                    set.forEach((value, valueAgain, set) => {
+                        alert(value);
+                    });
+                As you can see, the same value argument is used twice in the callback function, that's beacause of compatibility with map, where the callback has 3 arguments(this may help replace Map with Set and viceversa)
+            · set.keys() -> Returns an iterable object for values
+            · set.values() -> Same as set.keys(), exists for compatibility with Map
+            · set.entries() -> Returns an iterable object for entries [value, value], exists for compatibility with Map
+
+    · WEAKMAP AND WEAKSET - The difference with their peers is that they don't prevent garbage collection of key objects
+        · WEAKMAP - The first difference with Map is that keys MUST be objects, not primitive values 
+        · If we use an object an the key init, and there are no reference to that object, it will be removed from the memory(and therefore from the map) automatically:
+                let john = {name: "John"};
+                let weakMap = new WeakMap();
+                weakMap.set(john, "...");
+                john = null;
+                weakMap.get(john); // Error, no element john in map(and in memory)
+        · WeakMap doesn't support iteration and methods keys(), values(), entries(), so, there is no way to get all kays or values from it
+        · WeakMap has only the following methods:
+            · weakMap.set(key, value)
+            · weakMap.get(key)
+            · weakMap.delete(key)
+            · weakMap.has(key)
+        · Technically, WeakMap keys count is not known since the js engine decides arbitrarly when to delete objects
+        · The main area of application of WeakMap is additional data storage - If we're working with a 3rd party object and would like to store some data associated with it, we want the data
+          to exist only until the object is alive (caching included).
+                weakMap.set(foreignObj, "secret data"); // if foreignObj goes out of reach, secret data is disposed of automatically
+        · WEAKSET - WeakSet behaves similairly:
+            · It is analogous to Set, but we may only add objects to it(not primitives)
+            · An objects exists in WeakSet only until is reachable
+            · Supports add(), has() and delete() but NOT size(), keys() and no iterations(values(), entries())
+        · Being "weak" means that it also serves as additional storage, but is used for "yes/no" facts. A membership is WeakSet usually means something about the object(keeping track of who visited a website, ...)
+                let visitedSet = new WeakSet();
+                let john = { name: "John" };
+                let pete = { name: "Pete" };
+                let mary = { name: "Mary" };
+                visitedSet.add(john);
+                visitedSet.add(pete);
+                visitedSet.add(john);
+                alert(visitedSet.has(john));  //true
+                alert(visitedSet.has(mary));  //false
+                john = null;                  //vistedSet is cleaned automatically
+        
+    · OBJECT.KEYS, VALUES, ENTRIES - These are generic names for methods implemented for data structures, they're used for Map, Set, Array; Plain objects support them as well but with a different syntax:
+        · Object.keys(obj) -> Returns an array of keys 
+        · Object.values(obj) -> Returns an array of values
+        · Object.entries(obj) -> Returns an array of [key, value] pairs
+            · These differ from the data structures because they return an array instead of an iterable
+                    let user = {name: "john", age: 30};
+                    for(let entry of Object.values(user)){
+                        alert(entry);           // john, 30
+                    }
+        · Just like for...in, these methods ignore Symbol(...)
+        · We can't tranform objects directly(using filter(), map(), ...), however we can do create a chain like this:
+            · Use Object.entries(obj) to get an array [key, value] of obj
+            · Use the array methods we want to use on the array
+            · Use Object.fromEntries(array) on the resulting array to make it become an object
+                    let prices = {
+                    banana: 1,
+                    orange: 2,
+                    meat: 4,
+                    };
+                    let doublePrices = Object.fromEntries(
+                        Object.entries(prices).map(entry => [entry[0], entry[1] * 2])
+                    );
+                    alert(doublePrices.meat); // 8
+    
+    · DESTRUCTURING ASSIGNMENT - Allows us to "unpack" arrays or objects into a bunch of variables(if, for example, a function only needs certain keys/values)
+        · ARRAY DESTRUCTURING - Let's start with an example:
+                let arr = ["John", "Smith"];
+                let [firstName, surname] = arr;
+                alert(`${firstName}, ,${surname}); // John Smith
+            · Looks great when combined with split():
+                    let [firstName, surname] = "John Smith".split(" ");
+        · The array itself is not modified in the process
+        · Unwanted elements can be discarded using an extra comma:
+                let [firstName, , job] = ["John", "Smith", "Developer"];
+                alert(job); //Developer
+        · Works with any iterable on the right-side 
+                let [a,b,c] = "abc"; //"a", "b", "c"
+                let[one, two, three] = New Set([1, 2, 3]);
+        · Anything can be on the left-side(for instance, an object property):
+                let user = {};
+                [user.name, user.surname] = "John Smith".split(" ");
+                alert(user.name); //John
+        · Object.entries(obj) can be looped through:
+                let user = {...};
+                for(let [key, value] of Object.entries(user)){
+                    alert(`${key}, ${value}`);
+                }
+            The same can be done with Maps and Sets 
+        · The SWAP VARIABLE TRICK is a well-known trick for swapping the values of 2 variables:
+                let guest = "Jane";
+                let admin = "Pete";
+                [guest, admin] = [admin, guest];
+                alert(admin); //Jane
+        · We can set default values for the variables we want to use:
+                let [name = "Anon", surname = "Kun"] = ["Julius"];
+            · They can also be more complex expressions or even function calls that are evaluated ONLY IF the value is not provided:
+                    let [name = prompt("Name?", ""), surname = prompt("Surname?", "")] = [Julius]; //This will prompt the user for surname            
+        · THE REST(...) - If, after we're done assigning values to our variables, don't want to lose the data we didn't use, we can add another parameter (...arrName), that is, an array containing all remaining elements:
+                let [name, surname, ...rest] = ["Julius", "Caesar", "Consul", "of the Roman Republic"];
+                alert(rest); // ["Consul", "of the Roman Republic"]; 
+        · OBJECT DESTRUCTURING - The destructuring assignment works with objects as well: let {var1, var2} = {var1:..., var2:...}; for example:
+                let options = {
+                    title: "Menu",
+                    width: 200,
+                    height: 100,
+                };
+                let {title, width, height} = options; // title = "Menu", width = 200, height = 100
+            · We can be more specific on the right-side to tell what goes where:
+                    let options = {...};  //look above for options implementation
+                    let {width: w, height: h, title} = options; // property width goes into the variable w, options.height into h 
+                    alert(w); //200
+            · The REST PROPERTY(...) works with objects as well, it will, however, return an object with the properties we didn't use:  
+                    let options = {...};
+                    let {title, ..rest} = options;
+                    alert(rest.width); // 200
+            · If we were to use previously declared variables to get property names we need to add parentheses to the expression, otherwise, js will treat it as a code block and will throw an error:
+                    let title, width, height;
+                    {title, width, height} =  {title: "Menu", width: 200, height: 100}; // Error
+                    ( {title, width, height} =  {title: "Menu", width: 200, height: 100} ); // ok now since this is an expression 
+        · NESTED DESTRUCTURING - If an array contains other nested objects and arrays, we can use patterns to extract deeper portions:
+                let options = {
+                    size: {
+                        width: 200,
+                        height: 100
+                    },
+                    items: ["Cake", "Donut"],
+                    extra: true
+                };
+                let {
+                    size: {
+                        width,
+                        height
+                    },
+                    items: [item1, item2],
+                    title = "Menu"           // not present in the object (defalut value is used)
+                } = options;
+                alert(title);  // Menu
+                alert(width);  // 100
+                alert(height); // 200
+                alert(item1);  // Cake
+                alert(item2);  // Donut
+        · SMART FUNCTION PARAMTERS - There are times when a function has many paramters, most of wich are optional: here's where destructuring comes handy
+                let options = {
+                    title: "Menu",
+                    items: ["Item1", "Item2"]
+                };
+                function showMenu({
+                    title = "Untitled",
+                    width = 200,
+                    height = 100,
+                    items = []
+                    } = {}) {   //the brackets inside the paramters allows the destructuring while the last two brackets stand for an empty object as default value, this way it won't throw an error if you call showMenu() instead of showMenu({})
+                    //The parameters are taken from the objects passed to the function, (the non-existing ones are default)
+                }
+                showMenu(options);
+
+    · DATE AND TIME - Date is used to manage time/date 
+        · CREATION - New Date is the defalut constructor, all the time is based on 01.01.1970
+                let now = new Date(); //Shows current date/time
+        · An integer number representing the number of milliseconds thar passed since 01.01.1970 is called a timestamp
+        · date.getTime() -> converts date to a timestamp (dates before 01.01.1970 have a negative timestamp)
+        · new Date(str) -> If the Date argument is a string, it's parsed automatically
+                let date = new Date("2024-03-25"); // the time is not set, so it's considered to be midnight (adjusted to the GMT)
+        · new Date(year, month, date, hours, minutes, seconds, ms)
+            · The year argument is obbligatory
+            · The month starts at 0(january) and ends at 11(december) (obbligatory)
+            · Date is the day of the month (1 is default)
+            · Hours/minutes/seconds/ms if absent, are considered to be 0
+        · date.getFullYear() -> Get the year (4 digits)
+        · date.getMonth() -> Get the month (0 to 11)
+        · date.getDate() -> Get the day (1 to 31)
+        · date.getHours()/.getMinutes()/.getSeconds()/.getMilliseconds() -> Get the corresponding time component
+        · date.getDay() -> Get day of the week (0 sunday to 6 saturday)
+        · date.getTime() -> Returns the timestamp for the date
+        · date.getTimezoneOffset() -> Returns the difference between UTC and local time, in minutes
+        · date.setFullYear(year, [month], [date]) -> Sets date's year ([] arguments are optional)
+        · date.setMonth(month, [date]) -> Self explanatory, if confused, look above you and ask yourself what you did wrong in your life
+        · date.setDate(date)
+        · date.setHours(hour, [min], [sec], [ms])
+        · date.setMinutes(min, [sec], [ms])
+        · date.setSeconds(sec, [ms])
+        · date.setMilliseconds(ms)
+        · date.setTime(milliseconds) -> Sets the whole date by milliseconds since 01.01.1970
+        · AUTOCORRECTION - If we set out of range valus, it will automatically correct itself
+                let date = new Date(2013, 0, 32);
+                alert(date); // is 2013-2-1
+                date.setDate(date.getDate()+2);
+                alert(date); // 2013-2-3
+                date.setDate(0);  // zero or even negative values are possible, it will simply subtract the amount of milliseconds from the day, since the minimun is 1, it will subract 24*60*60*1000 ms
+                alert(date); // 2013-1-31
+        · Date.now() -> Returns the current timestamp
+        · Date.parse(str) -> Parses a string to read a date
+            · The format should be YYYY-MM-DDTHH:mm:ss.sssZ, where only the year is not optional:
+                · YYYY-MM-DD is the date format
+                · "T" is used as the delimiter
+                · HH:mm:ss.sss is the time
+                · "Z" is the time zone in the format +-hh:mm. A single "Z" would mean UTC+0
+                        let ms = Date.parse('2012-01-26T13:51:50.417-07:00'); //1327611110417(timestamp)
+
+    · JSON METHODS - Can be used for a variety of things, such as sending an object over the network in an interactive string form(JSON -> javascript object notation)
+        · JSON.stringify(value[ replacer, space]) -> Coverts js format object or values into JSON object format( the object is coverted to a string), also called marshalled object; 
+          In JSON objects strings use exclusively double quotes (") and being language independent, Methods, Symbolic key/values and Properties that store "undefined" are skipped;
+          "value" is the value to encode, "replacer" is an array of properties to encode or a mapping function fucntion(key, value), "space" is the amount of space used for formatting
+                let student = {
+                    name: "John",
+                    age: 20,
+                    courses: ["html". "css", "js"]
+                    let sayHi(){ alert("Hi");}
+                }
+                JSON.stringify(student); 
+                /* JSON encoded object:
+                {
+                    "name": "John",
+                    "age": 20,
+                    "courses": ["html", "css", "js"]
+                    // ... -> methods and other js dependent properties are ignored(look above for the list)
+                } */
+            · It can also be applied to:
+                · Objects {...}
+                · Arrays [...]
+                · Primitives (strings, numbers, booleans, null)
+                        alert(JSON.stringify(1)); //1
+                        alert(JSON.stringify('test')); //"test" -> notice the double quotes
+                        alert(JSON.stringify([1, 2, 3])); //[1, 2, 3]
+                    · Nested objects are supported and converted automatically, however, there can't be a circular reference:
+                            let room = {number: 23};
+                            let meetup = {
+                                title: "conference",
+                                participants: [{name: "John"}, {name: "Pete"}]
+                            };
+                            meetup.place = room;
+                            room.occupiedBy = meetup;
+                            JSON.stringify(meetup); //Error, converting circular reference
+                        · "replacer" can be used to fix the code excluding the circular reference (A mapping function is a valid "replacer" argument):
+                                let room = {...}
+                                let meetup = {...}
+                                meetup.place = room;
+                                room.occupiedBy = meetup;
+                                JSON.stringify(meetup, [title, participants]); // {"title": "Conference", "participants": [{}, {}]}
+                                //if we were to include name as well, we'd have {"title": "Conference", "participants": [{"name": "John"}, {"name": "Pete"}]}
+                            · "Space" is used for indentation, if it's a number, indents spaces with that number, if it's a string, indents with that string  
+        · CUSTOM toJSON() - An object may provide a custom toJSON() property to use instead of stringify()
+                let room = {
+                    number:23;
+                    toJSON() {
+                        return this.number;
+                    }
+                };
+        · JSON.parse(str[, reviver]) -> Coverts str in JSON format to js value format, reviver is an optional value to tranform (key, value) pairs in the desired way
+                let number = "[0, 1, 2, 3]";
+                numbers = JSON.parse(number);
+                alert(number[1]); // 1
+            · Usuful for nested data:
+                    let userData = '{"name": "John", "age": 35, "isAdmin": false, "friends": [0, 1, 2, 3]}';
+                    let user = JSON.parse(userData);
+                    alert(user.friends[2]); // 2
+                · Doesn't matter how complicated an object gets, it can be assigned as long as it follows the JSON pattern(remeber, comments aren't supported in JSON)
+            · "Reviver" is the helper function used to parse data that is not automatically parsed in the correct way or that we want to modify:
+                    let str = '{"title": "Conference", "date": "2017-11-03T11:30:00.000Z"}';
+                    let meetup = JSON.parse(str, function(key, value){
+                        if(key == "date") return new Date(value);
+                    });
+                           
+
+
+ 

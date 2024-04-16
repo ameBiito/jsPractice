@@ -1,0 +1,46 @@
+· DEBUGGER in our script pauses the code on that point, it only works when the development tools are open, it is ignored otherwise
+
+· testing is very important as it is necessary to have less bugs in our code 
+
+· ASSERT functions assert.* are used to check wether the following function works as intended, for example:
+        assert.equal(pow(2, 3), 8) ;  //assert asserts wether pow(2,3) has the same value on the right(8), this way, it checks if the function result is the expected one 
+    these functions are implemented in the CHAI framework and there are several such as:
+        assert.equal(val1, val2) checks the == equality
+        assert.strictEqual(val1, val2) checks the === equality
+        assert.notEqual(val1, val2), assert.notStrictEqual(val1, val2) checks the != and the !== equality
+        assert.isTrue(val) checks that val === true
+        assert.isFalse(val) checks that val === false
+
+
+· MOCHA is a testing framework that runs the spec(a.k.a. spacification, that is, a description of use cases together with tests for them)
+
+in order to tell you the basics, i'll need you to imagine we want to develop a function pow(a, b) that returns a to the b power;
+· Before creating the code, we can imagine what the function should do and describe it(such description is called a spec):
+            describe("pow, function() {
+                it("raises to n-th power, function() {
+                    assert.equal(pow(2,3), 8);
+                });
+            });
+    as you can see, a spec has three main building blocks:
+        describe("title", fuction() {,,,})
+            in our case, we're describing the function pow 
+        it("use case description", function() {...} )
+            this is the group worker, in it() we want a human-readable-way to describe this particular use case while the second argument is a function that tests it 
+        assert.equal(value1, value2)   
+            this is the second inside of it(), if correct, should execute without errors
+    Usually the development flow goes like this:
+        1.An initial spec is written, with test for the most basic functionality
+        2.An initial implementation is created
+        3.To check wether everything works as intended, we run testing frameworks like mocha that run the spec where, if errors are displayed, we make corrections until everything works
+        4.Now we have a working initial implementation with tests
+        5.We add more use cases to the spec, propbably not yet supported by the implementation, so, tests start to functionality
+        6.Go to 3, update until tests give no more errors
+        7.Repeat steps 3-6 until the functionality is ready
+    So, as you can see, development is an iterative process
+
+
+
+·TRANSPILERS: a transpiler is software thet translates source code to another source code, it can parse(read and understand) modern code and rewrite it for older syntax constructs(so that it will work on outdated engines)
+
+
+·POLYFILLS: a script that updates/adds new functions is caled a "polyfill", it fills the gap and adds missing implementation(for example, if a new function is added and used on the standard, however the application has to be deployed on legacy browsers)

@@ -1,0 +1,388 @@
+OBJECTS
+
+· Objects are used to store keyed collections of various data and more complex entities, they're created like this:
+    let user = {};              //object "literal" syntax
+    let user = new Object();    //object "constructor" syntax
+
+    PROPERTIES
+
+    · PROPERTIES: We can put some properties into {...} as key:value pairs and even though not necessary, it's better to have a comma also on the last property so that they can be added easily:
+            let user = {
+            name: "John",
+            age: 30,
+            };
+    A property has a key(a.k.a as name or identifier) before the colon ":" and a value to its right.
+    These properties are accessible using the dot "." notation and can be added to the object with the same notation
+            alert( user.name );  //John
+            user.isAdmin = true; // Now user has a isAdmin property which is set to true
+    They're deleted using the "delete" operator:
+            delete user.isAdmin;
+    We can also use multiword space separated names for properties but they have to be comma'd:
+            let user = {
+            name: "John",
+            "has a dog": true,
+            };
+            
+
+    · SQUARE BRACKETS: For multiword properties, the dot access doesn't work, so, we use the square "[]" notation which can access any property:
+            let user = {};
+            user["likes me"] = true;
+            alert(user["likes me"]); //true
+            delete user["likes me"];
+    This can be very useful for run-time-calculated or user inputted properties that have to be accessed:
+            let user = {
+            name: "John",
+            age: 30,
+            }; 
+            let known = prompt("What do you want to know about the user?");
+            alert(user[known] ?? "Not much i see");
+
+
+    · COMPUTED PROPERTIES: we can use square brackets in an object literal when creating an object, that's called computed properties:
+            let fruit = prompt("Which fruit do you want to buy?", 'Apples');
+            let bag = {
+            ['spoiled' + fruit]: 5,
+            }
+            alert(bag[fruit]) //bag.spoiledApples = 5 if prompt is not given 
+    You can see how more powerful the square brackets notation is than the dot one 
+
+    · PROPERTY VALUE SHORTHAND is when we use variable names as property names, this is so common that is has a simplified syntax:
+    instead of:
+            function makeUser(name, age){
+            return{
+                name: name,
+                age: age,
+            };
+            }
+            let user = makeUser("John", 30);
+    we have:
+            function makeUser(name, age){
+            return{
+                name, 
+                age,
+            };
+            }
+
+    · The IN operator: since you can access existing and non-existing properties, the IN operator exists to check wether a property exists in an object or not:
+            let user = {
+            name: "John",
+            age: 30,
+            };
+            alert("name" in user) //true, user.name exists 
+    · The properties to the right of IN have to be quoted because if they aren't that means they're variable and will thus check if the content of the variable is a property:
+            let user = {age:30,};
+            let key = age;
+            alert(key in user)  //true, user.age exists
+
+    · The FOR/IN loop is a special for loop used to walk over all the keys of an object, the syntax is:
+            for(key in object){...}
+    for instance, let's output the properties of user:
+            let user = {
+            name: "John",
+            age: 30,
+            };
+            for(let key in user){
+            alert(key);         //name, age
+            alert(user[key])    //John, 30
+            }
+
+
+    REFERENCE AND COPYING 
+
+        ·One of the fundumental difference between primitives and objects is the way they're stored and copied, in objects it is done by reference whereas in primitives are copied as "whole values"
+                let user = {name: "john",};
+                let admin = user; //admin points to the same address in memory
+                admin.name = "pete";
+                alert(user.name); //pete
+            A funny side effects of this is that const objects' properties can be modified:
+                const user = {name: "pete",};
+                user.name = "john";   //legal
+
+        · OBJECT COPYING(cloning) can be done easily by copying all the objects keys in another object:
+                let user = {name: "john", age: 30};
+                let clone = {};
+                for(let key in object){
+                    clone[key] = user[key];
+                } 
+            instead, we can use Object.assign(destinationObj, sourceObj1, ..., sourceObjN) to do it:
+                let user = {name: "john",};
+                let clone = {};
+                Object.assign(user, clone);
+            if the copied property already exists, it gets overwritten by the new one and we can also perform simple cloning:
+                let user = {name: "john", age: 30,};
+                let clone = Object.assign( {}, user ) //copies the object to an empty objects and returns it
+
+        · DEEP CLONING is necessary if an objects is made from not only primitives, but other objects as well:
+                let user = {
+                    name: "john",
+                    sizes: {
+                        feet: 45,
+                        waist: 52,
+                        torso: "L",
+                    },
+                };
+                let clone = Object.assign({}, user); //clones the name property but references the same size object
+            for this case, structuredClone(objName) is used as it can clone most data types such as objects, arrays, primitives, ... and it also supports circular references(when an object property references itself)
+                    let user = {
+                    name: "john",
+                        sizes: {
+                            feet: 45,
+                            waist: 52,
+                            torso: "L",
+                        },
+                        me: user,
+                    };
+                    let clone = structuredClone(user);
+                    alert(user.sizes === clone.sizes) //false
+                    alert(clone.me === clone) //true
+            it doesn't, however, support function properties(when an object property is a function )
+
+    GARBAGE COLLECTION 
+
+        Memory management is automatic in javascript, it is done by the garbage collector and all it comes down to is a concept: REACHABILITY, that meaning, it all comes down to if a value can be reached and thus used, or not.
+
+        · ROOTS are the inheretly reachable values that cannot be deleted for obvious reasons, for instance:
+            · The currently executing function, its local variables and parameters
+            · Other functions on the current chain of nested calls, their local variables and pramaters 
+            · Gloabal variables
+            · Other (interal ones as well)
+        · Any other value is considered reachable if it's reachable froma root by a reerence or by a chain of references, for instance, if there's an object in a global variable, and that object has a property referencing another object, that object is considered reachable.
+
+        · If you want to delete an object, you need to remember that only ingoing references matter for the concept of reachablity, meaning:
+            function marry(man, woman){
+                woman.husband = man;
+                man.wife = woman;
+                return{
+                    father: man,
+                    mother: woman
+                }
+            }
+            let family = marry({
+                name: "John"
+            }, {
+                name: "Ann"
+            });
+        if we want now to delete father from family, we need to:
+            delete family.father;
+            delete family.mother.husband;
+        now, even though family.father.wife still exists, it cannot be reached in any way from the global object and it is thus deleted. 
+
+        · The basic garbage collection algorithm is called mark-and-sweep and these are the steps that are regularly performed:
+            · The garbage collector takes the roots and "marks"(rememebers) them
+            · Then it visits and marks all references from them 
+            · Then it vists marked objects and marks their references. All visited objects are remembered, so that it doesn't visit the same object twice
+            · And so on until every reachable(from the roots) reference is visited
+            · All objects except the marked ones are removed 
+        
+        · Several optimizations are introduced in this process to make the processing of code faster such as:
+            ·Generational Collection - Objects are split in 2 sets, new and old ones, usually objects have a short lifespan, so, it makes sense to track new ones and clear memory if it's the case, those who live longer, though, are examined less often.
+            ·Incremental Collection - If we try to track every object at once, it may take some time and introduce some delays in the execution, so, objects are split into multiple part and processed one after the other. This means that there are many instances of the garbage collector instead of a total one, thus mening we have multiple "tiny" delays instead of a "big" one.
+            ·Idle-time Collection - The garbage collector tries ro run only while the CPU is idle, to reduce the possible effects on the execution.
+            ·Others that are specific to each engine
+
+
+    OBJECT METHODS
+        Objects can have methods(functions) in their properties:
+            let user = {
+                name: "John",
+                age: 30,
+                function() sayHi{
+                    alert("Hi");
+                },
+            };
+            user.sayHi; //Hi
+
+        · METHOD SHORTHAND: there exists a shorter syntax for methis in an object literal:
+                let user = {
+                    sayHi(){
+                        alert("Hi");
+                    },
+                };
+            we can omit the function part; there are, however, subtle differences between the two related to object inheritance
+
+        ·THIS: it is common that an object has to access information regarding itself, to do this, we use the "this" keyword; the value of "this" is the object itself:
+                let user = {
+                    name: "John",
+                    age: 30,
+                    introduce(){
+                        alert(`Hello, my name is ${this.name}`);
+                    },
+                }
+                user.introduce(); //Hello, my name is John
+            technically you could use the object name itself, however, that's unreliable, say, for example you copy it.
+            The value of "this" is evaluated at run-time depending on the context and thus it is legal to do things such as:
+                let user = {name: "John"};
+                let admin = {name: "Pete"};
+                function sayHi(){
+                    alert(`Hi, ${this.name}`);
+                }
+                user.f = sayHi();
+                admin.f = sayHi();
+                user.f(); //Hi John
+                admin.f(); //Hi Pete
+                admin[f](); //Hi Pete
+            
+        · CONSTRUCTOR FUNCTION / NEW - constructor functions are technically regular functions (except arrow functions who have no "this"), there are 2 conventions, though:
+            1. They're named with a capital letter first
+            2. They should be executed only with the "new" operator
+                function User(name){
+                    this.name = name;
+                    this.isAdmin = false;
+                }
+                let user = new User("Jack"); //notice the capital U for User, this constructor will be used for the creation of objects
+            when a function is executed with "new", it does the following steps:
+                1. A new empty object is created and assigned to "this"
+                2. The function body executes. Usually it modifies "this", adding new properties to it
+                3. The value of "this" is returned
+            if we want to, we can wrap an object creation around a function so that it can only be used once:
+                let user = new function(){
+                    this.name = "John";
+                    this.isAdmin = false;
+                    ...//complex code
+                };
+        
+        · NEW.TARGET - inside a function, we can check wether it was called with "new" or without it, using new.target, this property value is undefined for regular calls and equals the function called with "new":
+                function User(){
+                    alert(new.target);
+                }
+                User();   //undefined
+                new User(); // function User(){...}
+            this approach is used inside libraries to make syntax more flexible so that it works either if you call it with "new" or not:
+                function User(name){
+                    if(!new.target){
+                        return new User(name);
+                    }
+                    this.name = name;
+                }
+                let John = User("John")
+        
+        · RETURN FROM CONSTRUCTORS - Usually contructors don't have return statements as all they do is write stuff to this, however, if there is a return statement, the tules are simple:
+            · If "return" is called with an object,then the returned object is returned instead of "this"
+            · If "return" is called with a primitive, it's ignored
+            So, basically, if anything else other than an object is returned, "this" is returned
+                function BigUser(){
+                    this.name = "John";
+                    return{ name: "Godzilla"}; //this object is returned 
+                } 
+                alert( new BigUser().name)  //Godzilla
+
+    OPTIONAL CHAINING
+        The optional chaining "?." is a safe way to access nested object properties, even if an intermediate property doesn't existing.
+        In reality, not every object's property exists, as an example, all of our users have a street property, if one of the users omits it, when we try to access that user's property, we get an error.
+        In some cases the absence of a property can be expected, as such, we need a way to manage this case
+
+        · The optional chaining operator "?." stops the evaluation if the value before ?. is undefined or null and returns undefined, in other words, value?.prop works as value.prop if value exists, otherwise, returns undefined:
+                let user {};
+                alert(user?.address?.street)  //undefined (no error)
+        · It also works with parentheses and square brackets,  "?.()" is used to call a function that may not exist, "?.[]" is used to access properties instead of dot, similairly, it allows to safely read a property from an object that may not exist:
+                let userAdmin = {
+                    admin(){
+                        alert("I am admin");
+                    }
+                };
+                let userGuest = {};
+                userAdmin.admin?.();  // I am admin
+                userGuest.admin?.();  //nothing happens (no such method exists)
+        · "?." can also be used with "delete":
+                delete user.?name; //deletes user.name if it exists
+        · The "?." cannot be used for writing:
+                let user = null;
+                user?.name = "John"; //error
+
+    THE SYMBOL TYPE 
+        By specification, only two primitives can serve as object keys: strings or symols
+        · SYMBOL - A symbol represents a unique identifier; a value of this type can be created using Symbol():
+                let id = Symbol();
+            · Upon creating, we can give symbols a description (also called a symbol name):
+                let id = Symbol(id);  //id symbol description is id
+            · Symbols are guaranteed to be unique, even if we give them the same description
+            · They don't autoconvert to a String(for example in an alert())
+        · HIDDEN PROPERTIES - Symbols give us the possibility to create hidden properties inside an object that no other part of code can access:
+                let user = {
+                    name: "John",
+                };
+                let id = Symbol("id");
+                user[id] = 1;
+                alert(user[id]);    //we can access the data using the symbol id
+            · Symbols are useful when working with 3rd party code that may have pre-defined behaviour since, if you add a Symbol to that code, the previous code has no mean to use it in an unexpected way
+        · SYMBOLS IN AN OBJECT LITERAL - If we want to use a symbol in an object literal, we need square brackets around it since we need the value from the variable id as the key, not the string :
+                let id = Symbol("id");
+                let user = {
+                    name: "John",
+                    [id]: 123,      //not "id" = 123
+                }
+            · They are skipped in for,in loops as well as Object.keys(objName):
+                let id = Symbol("id");
+                let user = {
+                    name: "John",
+                    [id]: 123,      //not "id" = 123
+                }
+                for(let key in user)alert(key); //name 
+            · Object.assign(), on the other hand, copies both string and symbol properties since when you want to clone an object, you want to clone it all.
+        · GLOABAL SYMBOLS - Sometimes we want the Symbols to have the same meaning, (for example, id); To achieve that, there exists a global symbo registry, where we can create symbols and access them later and it guarantees that repeated access by the same name returns exactly the same symbol;
+            · To create it, use: Symbol.for(key), that calls the global registry and, if there's a symbol described as key, then returns it, otherwise, creates a new Symbol(key) and stores it in the registry with the given key:
+                    let id = Symbol.for("id");
+                    let idAgain = Symbol.for("id");
+                    alert(id === idAgain) //true 
+            · We can also do the oppsite (return a name by global symbol), to do that, we use: Symbol.keyFor(id)
+                    let sym = Symbol.for("name");
+                    let sym2 = Symbol.for("id");
+                    alert(Symbol.keyFor(sym));   //name
+                    alert(Symbol.keyFor(sym2));  // id 
+                · It works only for global symbols since it uses the gloabl registry     
+
+    OBJECT TO PRIMITIVE CONVERSION
+        Javascript doesn't allow you to customize how operators work with objects, so, it converts them to primitves and then the desired operations are carried on
+        · CONVERSION RULES - There are some rules to conversion:
+            1. There's no conversion to boolean: all objects are TRUE
+            2. The convertion happens when we subtract objects or apply matematical functions to them
+            3. Usually an object is converted to a string when we output it(alert() and similair)
+        · HINTS - There are 3 variants that happen in various situations called "hints":
+            · "string" when we're doing an operation on an object that expects a string, like alert()
+                    alert(obj);      // output
+                    anotherObj[obj]; //using object as property key 
+            · "number" when we're doing maths
+                    let n = +obj;  //unary plus (attempts to convert to a number)
+                    let greater = user1 > user2 ? user1 : user2
+            · "default" occurs when an operator is not sure what to expect (e.g the "+" operator who can work with both numbers and strings alike)
+                    let total = obj1 + obj2;
+            · All built-in objects (except date) implement the "default" the same as "number"
+            · To do the conversion, js tries to find and call 3 object methods:
+                1. Call obj[Symbol.toPrimitive](hint) - the method with the symbolic key Symbol.toPrimitive(system symbol), if such method exists
+                2. Otherwise if hint is "string", try calling obj.toString() or obj.valueOf()
+                3. Otherwise if hint is "number" or "defalut", try calling obj.valueOf() or obj.toString()
+        · Symbol.toPrimitive METHOD - There is a built-in symbol names Symbol.toPrimitive that should be used to name the conversion method:
+                obj[Symbol.toPrimitive] = function (hint){
+                    //code to convert this object to a primitive, it must return a primitive value
+                };
+            If this exists, it's used for all hints and no more methods are needed, for instance:
+                let user = {
+                    name: "John",
+                    money: 1000,
+                    [Symbol.toPrimitive] (hint){
+                        alert(`hint: ${hint} ->`);
+                        return hint === "string" ? `{name: "${this.name}"}`: this.money;
+                    }
+                };
+                alert(user);  // hint: string -> {name: "John"}
+                alert(+user); //hint: number -> 1000
+                alert(user + 500); //hint: default -> 1500
+        ·toString / valueOf METHODS - if there is no Symbol.toPrimitive, then js tries to find methods "toString" and "valueOf":
+            · For the "string" hint, call toString and if it doesn't exist it returns an object instead of a primitive value, then call valueOf
+            · For other hints, call valueOf and if it doesn't exist return an object instead of a primitive value, then call toString
+            By default, a plain object has the following toString and valueO methods:
+                · The toString returns a string "[object Object]"
+                · The valueOf returns the object itself
+                        let user = {name: "John"};
+                        alert(user); //[object Object]
+                        alert(user.valueOf() === user) //true
+                    
+
+
+
+
+
+
+
+
+            

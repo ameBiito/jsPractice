@@ -1,0 +1,138 @@
+· PROMISES, ASYNC/WAIT 
+
+    · INTRODUCTION - Many functions are provided by js host environment that allow you to schedule asynchronous actions(actions we initiate now but finish later)
+      For instance, one such function is the setTimeout() function. 
+        · CALLBACK - When we use asynchronous programming, we should provide a way for the function that has to run after the script is loaded. To do such things
+          we use CALLBACK functions as arguments, arguments to which we'll provide the function that has to run after the completion:
+                function loadScript(script, callback){
+                    let script = document.createElement('script');
+                    script.src = src; //CSS stuff(need to get back to later)
+                    script.onload = () => callback(script); //onload executes a function when the script is loaded and executed
+                    document.head.append(script); // appends the <script> to the HTML document 
+                }
+                loadScript('https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.2.0/lodash.js', script => {
+                    alert("The script ${script.src} is loaded");
+                    alert( _ );  // _ is a function declared in the loaded script
+                });
+            · HANDLING ERRORS - In the previous example, we didn't consider the case the script doesn't load, here's an improved version:
+                    function loadScript (src, callback){
+                        let script = document.createElement('script');
+                        script.src = src;
+                        script.onload = () => callback(null, script);
+                        script.onerror = () => callback(new Error(`Script loading error for ${src}`));
+                        document.head.append(script);
+                    }
+                · The usage is:
+                        loadScript('my/script.js', function(error, script){
+                            if(error){
+                                //error handling
+                            } else {
+                                //script loaded successfully
+                            }
+                        });
+    
+    · PROMISES 
+        · Let's begin with the constructor:
+                let promise = new Promise(function(resolve, reject){
+                    // executor (the producing code)...
+                })
+            · EXECUTOR - The function passed to "new Promise" is called "executor". When the Promise is created, the executor runs automatically. It contains the producing code which
+              should eventually produce the result; "resolve" and "reject"(callbacks) are provided by the engine itself, our code is only inside the executor.
+              When the executor obtains the reuslt it should call ONE of these callbacks:
+                - resolve(value) -> If the job is finished successfully with result "value"
+                - reject(error) -> If an error has occured, "error" is the error object.
+            · The "Promise" object returned by the "new Promise" constructor has these internal properties:
+                - state -> Initially "pending", then changes to either "fulfilled" when "resolve" is called or "rejected" when "reject" is called 
+                - result -> Initially "undefined", then changes to either "value" when "resolve" is called or "error" when "reject" is called 
+                        let promise = new Promise(function(resolve, reject){
+                            setTimeout(() => resolve("Done"), 1000); //The function executes automatically when the object is created and after 1 sec the job is done with result "Done"
+                        });
+                    · To summarize, the executor should perform a job (that usually takes time) and then call either resolve or reject to change the state of the corrisponding Promise object
+                    · Any change of state to the Promise object is final, al further calls of "resolve" or "reject" are ignored
+                    · "resolve" and "reject" accept 1 or none arguments when they're called
+                    · "reject" should only be called with "Error" objects or objects that inherit from it
+            · THEN, CATCH - Consuming functions can be registered to Promises using .then and .catch 
+                · THEN - The syntax is:
+                        promise.then(
+                            function(result){ /*handles a successful result */},
+                            function(error){ /* handles an error */}
+                        );
+                    · We can also provide only one argument if we're interested in ONLY SUCCESSFUL completions:
+                                let promise = new Promise(function(resolve, reject){
+                                setTimeout(() => resolve("Done!"), 1000); 
+                                });
+                                promise.then(
+                                result => alert(result),  // Done!
+                                error => alert(error)
+                                ); 
+                                promise.then(alert); // Same in this scenario
+                · CATCH - If we are interested ONLY in ERRORS, we have 2 possibilities: 
+                        let promise = new Promise(function(resolve, reject){
+                                setTimeout(() => reject(new Error("Whoops!")), 1000); 
+                        });
+                        promise.then(null, alert);   //Whoops!
+                        promise.catch(alert);        //Whoops!
+                    · Basically, catch() is just a shorthand for then(null, errorHandlingFunction).
+                · FINALLY - Finally has to set up an handler for performing-cleanup/finalizing stuff after the previous operations are complete(stopping loading indicators, closing no longer needed connections, ...)
+                        let promise = new Promise((resolve, reject) => {
+                            //code
+                        });
+                        promise.finally(() => stopLoadingIndicator()); // runs when the promise is settled independently by the result
+                    · Finally is similair to "then()" but has a few key differences:
+                        1. A "finally" handler has no arguments (as it doesn't care about the result of the promise)
+                        2. A "finally" handler "passes through" the result or error to next suitable handler
+                                let promise = new Promise((resolve, reject) => {
+                                //code
+                                })
+                                    .finally(() => alert("Promise Ready"))
+                                    .then(result => alert(result));
+                        3. A "finally" handler shouldn't return anything. The only exception is an Error, if thrown it goes to the catch{...} block
+
+    · PROMISES CHAINING - Say we happen to have a sequence of asynchronous tasks that have to be perfromed one after the other. 
+      Promises give us the ability to chain calls on them to make this possible:
+            new Promise(function(resolve, reject){
+                setTimeout(() => resolve(1), 1000);
+            }).then(function(result){
+                alert(result);
+                return result * 2;
+            }).then(function(result){
+                return result * 2;
+            });
+        · Here the flow is:
+            1. The initial promise resolves in 1 second
+            2. Then the ".then" handler is called which in turn creates a new promise
+            3. The next "then" gets the result of the previous one, processes it and the process ends 
+        · This works because every call to ".then" returns a "thenable" object - an arbitrary object that has a method ".then". It will be treated the same as a promise   
+          This way a 3rd party library can implement a Promise-like object whose only requirement is to have a ".then" method.      
+        · Every handler can return a new Promise of its own     
+
+    · ERROR HANDLING WITH PROMISES - Promises chains are great at error handling, you can have a ".catch" after several ".then":
+            fetch(url)                             //fails
+                .then(response => response.json())
+                // other .then stuff
+                .catch(err => alert(err));         // error message 
+        · IMPLICIT "try...catch" - The code of a Promise executor has an implicit try...catch around it, if an exception happens, it is treated as a rejection.
+          This happens in the handlers as well:
+                new Promise((resolve, reject) => {
+                    resolve("ok");
+                }).then((reuslt) => {
+                    throw new Error("Whoops");
+                }).catch(alert); //Error: Whoops
+            · This happens for programming errors as well (referenceerror, typerror, ...)
+        · RETHROWING - Just like a normal "catch" we can rethrow an error inside ".catch" and the same thing will happen, control passes to the next closest error handler(the next in the chain).
+        · UNHANDLED REJECTIONS - Just like a "try..catch", if we don't handle an error, the script dies and js throws a Global error.
+          These kind of errors can be handled in the browser using the event "unhandledrejection":
+                window.addEventListener('unhandledrejection', function(event){
+                    alert(event.promise); // The promise that generated the error
+                    alert(event.reason); // The unhandled error object
+                })
+
+    · PROMISE API - There are 6 static methods in the Promise class:
+            · Promise.all(iterable) -> Takes an iterable(usually an array of promises) and returns a new Promise. The new Promise resolves when all listed promises are resolved
+              and the array of their result becomes its result. The syntax is "let promise = Promise.all(iterable)"
+                    Promise.all([
+                        new Promise(resolve => setTimeout(() => resolve(1), 3000)),
+                        new Promise(resolve => setTimeout(() => resolve(2), 2000)),
+                        new Promise(resolve => setTimeout(() => resolve(3), 1000))
+                    ]).then(alert);  // 1, 2, 3
+                · If any of the Promises is rejected, the promise returned by Promise.all immediatly rejects with that error.

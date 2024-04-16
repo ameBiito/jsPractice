@@ -1,0 +1,85 @@
+"use strict" is used to make it so that old bad coding practice cannot be used in modern js while at the same time making it so that old code can still be used with the modern ECMA script rules
+
+there is no char type in js, only string
+
+
+BASIC METHODS 
+
+·alert() displays a modal window(modal means that until the visitor has dealt with the window, they cannot do anything else on the page)
+
+·prompt(title, [inputValue]) shows a window with a text message(title) and waits for an optional (square brackkets are used to indicate it is optional) value
+    let age = prompt("How old are you", 100) //if left blank, default value is 100
+    console.log(`You are ${age} years old`);
+
+·confirm(title) diplays a modal box with a title and 2 buttons(OK and Cancel), this function returns a bool value to its variable (true if OK false if Cancel)
+
+
+OPERATORS 
+
+· the conditional operator(?:) is a very simple if();
+    let result = condition? value1 : value2;
+    let legal = (age>18) ? true : false;
+
+
+· the nullish coalescing operator is written as (??) and it returns the first argument if it's not null, otherwise, the second one:
+    a ?? b // if a != null, reuturns a, if a is null or undefined, returns b
+  the point of this operator is to provide a default value, ex:
+    let user = prompt("Name?", "");
+    alert(user ?? "Anon-kun"); // if the user is not defined, it is treated as anon-kun
+  this can obviously be used also for multiple values so that we can use the first "defined" value
+  even though || could be used in place of it, it is better because it returns a defined value instead of a truthy value
+
+
+LOOPS 
+
+· LABELS for break/continue: sometimes we need to break out from multiple nested loop at once and for this we can use labels to label loops:
+        labelName: for(){
+            ...
+        }
+    for example:
+        outer: for(let i = 0; i<3; i++){
+            for(let j = 0; j<3, ++j){
+                ...
+                if(endCondition) break outer;
+                ...
+            }
+        }
+        alert("We're out");
+    we can do the same with continue, making it so that the labeled loop jumps to its next interaction
+
+FUNCTIONS 
+
+· functions are declared like this:
+        function functionName(){    //the function keyword is necessary 
+            ...
+        }
+    parameters can be given default values:
+        function greet(name = "anon"){
+            alert(`Hello ${name}`);
+        }
+
+
+· Function Expressions is another way to declare a function:
+        let greet = function(){
+            alert("Hello");
+        };
+    since the function creation happens after the assignment operator, this is a function expression and remember, functions in js are no different from variables
+    the difference between this and functions declarations is when these functions are created in the js engine, a function expression is created when the execution reaches it and it becomes usable only from that moment on whereas a function declaration can be called earlier than when it is defined; also, 
+    in strict mode, when a function declaration is within a code block, it is visible inside the whole block where it is declared but not ouside of it
+
+· CALLBACK FUNCTIONS or callbacks are function that are expected to be called back later if necessary   
+
+
+· ARROW FUNCTIONS are very concise functions:
+        let funcName = (arg1, arg2, ...) => expression; 
+    as you can see,it's just an inline function expression, used for simple things such as:
+        let sum = (a, b) => a+b;          instead of          let sum = function(a, b){return a+b;};
+    it can be further shortened if you have only one or zero argument:
+        let square = a => a*a;          or          let sayHi = () => alert("Hi");   //in this case the parenthesis cannot be omitted
+    we can also make multi-line expressions that require brackets {} with this function, however, in this case a return is required:
+        let sum = (a, b) => {
+            let result = a+b;
+            return result;
+        }
+
+

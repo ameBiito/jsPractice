@@ -1,0 +1,23 @@
+javascript was created to make web pages alive
+
+the programs created in this language are called scripts, they can be written in a web page html and run automatically when a page loads as they dont require special preparations to run
+
+javascipt is an high level language and its capabilities greatly depend on the environment it is running in (node.js has different functions its in-browser implementations)
+
+in-browser js can do everything related to webpage manipulation, interaction with the user and the webserver, for example:
+    ·add new html to the page changing the existinf content and modifying its style
+    ·react to user actions
+    ·send requests over the network to remove servers(upload and download)
+    ·get, set cookies, ask questions to the visitor, show messages
+    ·remeber the data on the client's side(local storage)
+there are however things taht in-browser js cannot do either because not possible or because recognized as an harmful behaviour(these do not apply to server-side js):
+    ·it has no direct access to the OS, meaning, it cannor read, write arbitrary files nor execute programs(thing taht can be bypassed through html actions such as <input>)
+    ·different tabs/windows shouldn't now of each other, so, js cannot access the other page if they come from a different domain, protocol, port; to work around that, both pages must agree for a data exchange
+    ·js can easily communicate over the net to the server where the current page came from, so, this ability is crippled except for special cases(HTTP/HTTPS)
+
+js is useful because it has: full integration with HTML/CSS, it's simple and it is supported by all major browsers by default
+
+
+
+Manual: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference
+

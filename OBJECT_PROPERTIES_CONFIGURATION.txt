@@ -1,0 +1,108 @@
+· OBJECT PROPERTIES CONFIGURATION 
+
+    · PROPERTY FLAGS AND DESCRIPTORS
+        · PROPERTY FLAGS - Object properties, besides "value", have 3 special attributes (so-called "flags"):
+            - "writable" -> If true, then value can be changed, otherwise it's read-only
+            - "enumerable" -> If true, then property is listed in loops
+            - "configurable" -> if false, the property can't be deleted and its attributes can't be modified(flags can be changed to false but not the other way around), however, if writable, its value can be modified 
+            · To get these flags and the syntax is: let descriptor = Object.getOwnPropertyDescriptor(obj, propertyName) where:
+                - "obj" is the object to get the information from
+                - "propertyName" is the name of the property
+                - The returned value is a "property descriptor" object, it contains the value and all the flags:
+                        let user = {name: "John"};
+                        let descriptor = Object.getOwnPropertyDescriptor(user, 'name');
+                        alert(JSON.stringify(descriptor));
+                        /* property descriptor:
+                        {
+                            "value": "John"
+                            "writable": true,
+                            "enumerable": true,
+                            "configurable": true
+                        }*/
+            · To change these flags we use this methods whose syntax is: Object.defineProperty(obj, propertyName, descriptor) where:
+                - "obj" and "propertyName" are the same as before
+                - "descriptor" is the property descriptor object to apply
+                - If "propertyName" exists, then it updates its flags, otherwise it creates the property with the given value and flags(if a flag is not supplied, it is assumed as false):
+                        let user = {};
+                        Object.defineProperty(user, "name", {
+                            value: "John"
+                            writable: true,
+                        });
+                        let descriptor = Object.getOwnPropertyDescriptor(user, 'name');
+                        /*JSON of descriptor
+                        {
+                            "value": "John"
+                            "writable": true,
+                            "enumerable": false,
+                            "configurable": false
+                        }
+            · Object.defineProperties(obj, descriptors) -> Allows to define many properties at once with the following syntax:
+                    Object.defineProperties(obj, {
+                        prop1: {value: " ", descriptor1: false,...}
+                        prop2: {...}
+                        //...
+                    });           
+            · Object.getOwnPropertyDescriptors(obj) -> Used to get all properties descriptors at once. Together with Object.defineProperties(),
+              it can be used as a "flag-aware" way off cloning an object since a normal clone doesn't copy an object flags:
+                    let clone = Object.defineProperties({}, Object.getOwnPropertyDescriptors(clonedObj));
+        · SEALING AN OBJECT GLOBALLY - Property descriptors work with individual properties; there are also methods that limit the access to the whole object:
+            · Object.preventExtensions(obj) -> Forbids the addition of properties to the object
+            · Object.seal(obj) -> Forbids adding/removing properties. Sets "configurable" = false for all existing properties
+            · Object.freeze(obj) -> Forbids adding/removing/changing of properties. Sets "configurable" and "writable" to false for all existing properties
+            · Object.isExtensible(obj) -> Returns false if adding properties is forbidden
+            · Object.isSealed(obj) -> Returns true if adding/removing properties is forbidden and all existing properties have "configurable" == false
+            · Object.isFrozen(obj) -> Returns true if adding/removing/changing properties is forbidden and all existing properties' "configurable" and "writable" are set to false 
+    
+    · PROPERTIES GETTERS AND SETTERS
+        · ACCESSORS - Accessor are properties that are essentialy functions that execute on getting and setting a value but look like regular properties to an external code 
+        · GETTERS AND SETTERS - Accessort properties are represented by "getter" and "setter" methods; in an object literal, they're denoted by "get" and "set":
+                let user = {
+                    name: "John",
+                    surname: "Smith"
+                    get fullName(){                              //special kind of method of type get 
+                        return `${this.name} ${this.surname}`;
+                    },
+                    set fullName(value){                        // special kind of method of type set
+                        [this.name, this.surname] = value.split(' ');
+                    }
+                };
+                user.fullName = "Alice Cooper" ;               // no parentheses are required(automatically calls the set method)
+                alert(user.name); //Alice
+                alert(user.fullName) // Alice Cooper           // no parentheses are required(automatically calls the get method)
+            · As a result we have a "virtual" property fullName that is both readable and writable
+        · ACCESSOR DESCRIPTORS - Descriptors for accessor properties are different from the ones of data properties, as a matter of fact, accessor have:
+            - get -> A function without arguments,  works when a property is read
+            - set -> A function with ONE argument, is called when the property is set
+            - enumerable -> Same as for data properties
+            - configurable -> Same as for data properties 
+                    let user = {
+                        name: "John",
+                        surname: "Smith"
+                    };
+                    Object.defineProperty(user, 'fullName', {
+                        get(){                                     
+                            return `${this.name} ${this.surname}`;
+                        },
+                        set(value){
+                            [this.name, this.surname] = value.split(" ");   //now fullName has both a getter and a setter 
+                        }
+                    });
+                    alert(user.fullName); //John Smith
+                    for(let key in user) alert(key); // name, surname (enumerable is by default false in fullName)
+                · Note that a property either has an accessor property(has get/set) or a data property(has a value), not both 
+        · SMARTER GETTERS/SETTERS - Both getters and setters can be used as wrappers over data properties to gain more control with them, for example:
+                let user = {
+                    get name(){
+                        return this._name;          // properties that start with underscore(_) are (conventionally) internal to the object and should not be accessed from the outside 
+                    }
+                    set name(value){
+                        if(value.length < 4){
+                            alert("Too short for me :|");
+                            return;
+                        }
+                        this._name = value;
+                    }
+                };
+                user.name = "Pete";
+                alert(user.name); // "Pete"
+                user.name = "Dio"; // too short 
