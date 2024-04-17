@@ -128,12 +128,17 @@
                 })
 
     · PROMISE API - There are 6 static methods in the Promise class:
-            · Promise.all(iterable) -> Takes an iterable(usually an array of promises) and returns a new Promise. The new Promise resolves when all listed promises are resolved
-              and the array of their result becomes its result. The syntax is "let promise = Promise.all(iterable)"
-                    Promise.all([
-                        new Promise(resolve => setTimeout(() => resolve(1), 3000)),
-                        new Promise(resolve => setTimeout(() => resolve(2), 2000)),
-                        new Promise(resolve => setTimeout(() => resolve(3), 1000))
-                    ]).then(alert);  // 1, 2, 3
-                · If any of the Promises is rejected, the promise returned by Promise.all immediatly rejects with that error.
-            · Promise.allSettled() -> 
+        · Promise.all(iterable) -> Takes an iterable(usually an array of promises) and returns a new Promise. The new Promise resolves when all listed promises are resolved
+            and the array of their result becomes its result. The syntax is "let promise = Promise.all(iterable)"
+                Promise.all([
+                    new Promise(resolve => setTimeout(() => resolve(1), 3000)),
+                    new Promise(resolve => setTimeout(() => resolve(2), 2000)),
+                    new Promise(resolve => setTimeout(() => resolve(3), 1000))
+                ]).then(alert);  // 1, 2, 3
+            · If any of the Promises is rejected, the promise returned by Promise.all immediatly rejects with that error.
+        · Promise.allSettled() -> Instead of returning an error like "Promise.all()", Promise.allSettled() waits for all promises to settle, regaredless of the result.
+          The resulting array elements have:
+            - {status: "fullfilled", value: result} for successful operations
+            - {staus: "rejected", reason: error} for errors 
+          This makes it useful because even if there was an error with one of the promises we wanted, we still have a result for all the fulfilled ones.
+          
