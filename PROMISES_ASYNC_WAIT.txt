@@ -136,9 +136,28 @@
                     new Promise(resolve => setTimeout(() => resolve(3), 1000))
                 ]).then(alert);  // 1, 2, 3
             · If any of the Promises is rejected, the promise returned by Promise.all immediatly rejects with that error.
-        · Promise.allSettled() -> Instead of returning an error like "Promise.all()", Promise.allSettled() waits for all promises to settle, regaredless of the result.
+        · Promise.allSettled(iterable) -> Instead of returning an error like "Promise.all()", Promise.allSettled() waits for all promises to settle, regaredless of the result.
           The resulting array elements have:
             - {status: "fullfilled", value: result} for successful operations
             - {staus: "rejected", reason: error} for errors 
           This makes it useful because even if there was an error with one of the promises we wanted, we still have a result for all the fulfilled ones.
-          
+        · Promise.race(iterable) -> Similair to promise.all() but waits only for 1 promise to settle(the fastest one(either resolve or reject)); All further results are ignored
+                Promise.race([
+                    new Promise((resolve, reject) => setTimeout => resolve(5), 5000),
+                    new Promise((resolve, reject) => setTimeout => reject(new Error("Whoops!")), 6000),
+                    new Promise((resolve, reject) => setTimeout => resolve(1), 1000),
+                ]).then(alert); // 1 -> it resolves first
+        · Promise.any(iterable) -> Similair to Promise.race() but waits for the first promise that is resolved. If all Promises are rejected, then the returned Promise
+          is rejected with "AggregateError", a special error object that stores all promise errors in its "errors" property:
+                Promise.any([
+                     new Promise((resolve, reject) => setTimeout => reject(new Error("Whoops!")), 1000),
+                      new Promise((resolve, reject) => setTimeout => reject(new Error("Ouch!")), 2000),
+                ]).catch(error => {
+                    console.log(error.constructor.name); //AggregateError
+                    console.log(error.errors[0]); // Whoops!
+                })
+        · Promise.resolve(value) -> Creates a resolved Promise with the result "value" which is the same as:
+                let promise = new Promise(resolve => resolve(value));
+            · This is merely used for compatibility, for example, when a function is expected to return a Promise 
+        · Promise.reject(value) -> Same thing as above but creates a rejected Promise. 
+
