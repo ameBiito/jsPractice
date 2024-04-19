@@ -184,4 +184,39 @@
     · MICROTASKS - Promise handlers .then/.catch/.finally are always asynchronous. Even when a Promise is resolved immediatly, the code lines below the 
       handlers will execute first.
         · MICROTASKS QUEUE - When a promise is ready, its handlers are put into the queue. When the engine is free from the current code, it takes a task from the queue and executes it.
-         
+
+    · ASYNC/AWAIT 
+        · ASYNC FUNCTIONS - The "async" keyword placed before a function like this:
+                async function f(){
+                    return 1;
+                }
+            Means that such function always returns a Promise: Other values are wrapped in a resolved Promise automatically so that:
+                    async function f(){
+                        return 1;
+                    }
+                    f.then(alert); // 1 -> A solved promise 
+        · THE AWAIT KEYWORD - The keyword "await" makes the engine wait until the promise that it takes the value from settles and returns the result. For example:
+                async function f(){
+                    let promise = new Promise((resolve, reject) => {
+                        setTimeout(() => resolve("Done!"), 1000);
+                    });
+                    let result = await promise; //wait until promise is settled 
+                    alert(result); //Done! -> if there wasn't await, it wouldn't have printed anything because this code would have been executed before the promise's settlement 
+                }
+                f();
+            · We can use "await" ONLY in asynchronous("async") functions 
+            · ERROR HANDLING - If a Promise resolves normally, then "await promise" returns the result. But in case of rejection, it throws the error.
+              If we didn't define a try...catch block such as:
+                    async function f(){
+                        try{
+                            let response = await fetch('/url');
+                            let user = await response.json();
+                        } catch(err) {
+                            alert(err);
+                        }
+                    }
+                Then we need to use a ".catch" handler when calling the function:
+                        async function f(){
+                            let response = await fetch('/url');
+                        }
+                        f().catch(alert); // handlers on function call 
