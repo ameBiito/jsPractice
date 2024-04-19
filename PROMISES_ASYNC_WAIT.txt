@@ -161,3 +161,22 @@
             · This is merely used for compatibility, for example, when a function is expected to return a Promise 
         · Promise.reject(value) -> Same thing as above but creates a rejected Promise. 
 
+    · PROMISIFICATION - Promisification is the process by which we convert a function that accepts a callback into a function that returns a Promise 
+      For instance:
+            function loadScript(src, callback){
+                let script = document.createElement('script');
+                script.src = src;
+                script.onload = () => callback(null, script);
+                script.onerror = () => callback(new Error(`Script load error for ${src}`));
+                document.head.append(script);
+            }
+        · As you can see this function uses a callback, let's promisify it:
+            let loadScriptPromise = function(src){
+                return new Promise((resolve, reject) => {
+                    loadScript(src, (err, script) => {
+                        if(err) reject(err);
+                        else resolve(script);
+                    });
+                });
+            };
+        · As you can see, the new function is a wrapper around the original loadScript function 
