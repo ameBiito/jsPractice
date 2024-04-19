@@ -180,3 +180,8 @@
                 });
             };
         · As you can see, the new function is a wrapper around the original loadScript function 
+
+    · MICROTASKS - Promise handlers .then/.catch/.finally are always asynchronous. Even when a Promise is resolved immediatly, the code lines below the 
+      handlers will execute first.
+        · MICROTASKS QUEUE - When a promise is ready, its handlers are put into the queue. When the engine is free from the current code, it takes a task from the queue and executes it.
+         
