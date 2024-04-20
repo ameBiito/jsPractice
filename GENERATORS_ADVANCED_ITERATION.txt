@@ -1,0 +1,91 @@
+· GENERATORS, ADVANCED ITERATION
+
+    · GENERATORS - While regular functions can return only a single value, generators can return (yield) multiple values, one ater the other, on demand.
+        · GENERATOR FUNCTIONS - Generator funcitons have their own synatx:
+                funciton* generateSequence(){
+                    yield 1;
+                    yield 2;
+                    return 3;
+                }
+            · When it runs, instead of running its code, it returns a "Generator Object".
+                · When next() is called on the generator, it runs the execution until the nearest "yield<value>". Then the execution is paused and the yielded "value"
+                  (which is "undefined" if omitted) is returned to the outer code. The result of next() is an object with 2 properties:
+                    - value: the yielded value
+                    - done: true if the function code is finished, false otherwise 
+                            function* generateSequence(){
+                                yield 1;
+                                yield 2;
+                                return 3;
+                            }
+                            let generator = generateSequence();
+                            let one = generator.next().value;
+                            alert(one); //1
+        · GENERATORS ARE ITERABLE - We can loop through a generator using for...of, however, every element of the generator must be proceeded by "yield":
+                function* generateSequence(){
+                    yield 1;
+                    yeld 2;
+                    return 3;
+                } 
+                let generator = generateSequence();
+                for(value of generator){
+                    alert(value); // 1, 2 -> doesn't show 3 
+                }
+            · USING GENERATORS FOR ITERABLES - We can use a generator function for iteration by providing it as "Symbol.iterator":
+                    let range = {
+                        from: 1,
+                        to: 5,
+                        *[Symbol.iterator](){   // a shorthand for [Symbol.iterator]: function*()
+                            for(let value = this.from; value <= this.to; value++){
+                                yield value;
+                            }
+                        }
+                    };
+                    alert( [...range] ); //1, 2, 3, 4, 5
+        · GENERATOR COMPOSITION - We can embed generators in each other, that is, the syntax "yield*" is used to "embed"(compose) one generator into another:
+                function* generateSequence(start, end){
+                    for(let i = start; i <= end; i++ ) yield i;
+                }
+                function* genratePasswordCodes(){ // not good for unique passwords 
+                    yield* generateSequence(48, 57); //0...9  // this delegates the execution to another generator -> transparently iterates over the generator
+                    yield* generateSequence(65, 90); //A...Z
+                    yield* generateSequence(97, 122); //a...z
+                }
+                let str = '';
+                for(let code of genratePasswordCodes()){
+                    str += String.fromCharCode(code);
+                }
+        · YIELD IS A 2 WAY STREET - Not only "yield" passes results to the outside, but can also pass the values inside the generator. To do so,
+          we use "generator.next(arg)", where "arg" becomes the result of "yield"
+                function* gen(){
+                    let result = yield "2+2 = ?";
+                    alert(result);
+                }
+                let generator = gen();
+                let question = generator.next().value; //-> yield returns the value 
+                generator.next(4); // -> passes the result into the generator 
+                // 2+2 = ? // 4 
+        · "generatorName.throw" -> Since "yield" is a 2 way street, we can also pass an error as a value for the generator. We do this using "generatorName.throw(new Error)".
+          The error is handled inside the generator function:
+                function* gen(){
+                    try{
+                        let result = yield "2+2 = ?";
+                        alert("Can't see me");
+                    } catch(err){
+                        alert(err);
+                    }
+                }
+                let generator = gen;
+                let question = generator.next().value;
+                generator.throw(new Error("Cannot find an answer"));
+        · "generatorName.return()" - "generatorName.return(value)" finishes the generator execution and returns the given "value"
+                function* gen(){
+                    yield 1;
+                    yield 2;
+                    yield 3;
+                }
+                const g = gen();
+                g.next(); // {value: 1, done: false}
+                g.return('foo'); //{value: foo, done: true}
+                g.next(); // {value: undefined, done:true}
+                
+
