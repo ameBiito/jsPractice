@@ -87,5 +87,57 @@
                 g.next(); // {value: 1, done: false}
                 g.return('foo'); //{value: foo, done: true}
                 g.next(); // {value: undefined, done:true}
-                
+    
+    · ASYNC ITERATION AND GENERATORS - Asynchronous iteration allows us to iterate over data that comes asynchronously, like when we download somethig in chunks over a network.
+        · ASYNC ITERABLES - To make an object iterable asynchronously:
+            1. Use "Symbol.asyncIterator" instead of "Symbol.iterator"
+            2. The next() method should always return a Promise(to be fulfilled with the next value)
+                · The "async" handles it, we can simply make async next()
+            3. To iterate over such an object, we should use a "for await(let item of iterable)" loop
+                · Note the "await" keyword 
+                    let range = {
+                        from: 1,
+                        to: 5,
+                        [Symbol.asyncIterator](){
+                            return {
+                                current: this.from,
+                                last: this.to,
+                                async next(){
+                                    await new Promise (resolve => setTimeout(resolve, 1000)); // just delay for a second(to show you can use await )
+                                    if(this.current <= this.last){
+                                        return {done: false, value: this.current};
+                                    } else {
+                                        return {done: true};
+                                    }
+                                }
+                            };
+                        }
+                    };
+                    (async () => {  // since you hae to use await in the for...of, you need to wrap this in an async expression
+                        for await (let value of range){
+                            alert(value); // 1, 2, 3, 4, 5
+                        }
+                    })()
+                · The spread syntax DOESN'T work asynchronously as it expects "Symbol.iterator"
+        · ASYNC GENERATORS - The syntax is simple: prepend "function*" with "async"; that makes the generator asynchronous, then we can use "for await()" to iterate over it:
+                async function* generateSequence(start, end){
+                    for(let i = start; i <= end; i++){
+                        await new Promise(resolve => setTimeout(resolve, 1000));  // we can use await(!)
+                        yield i;
+                    }
+                }
+                (async () => {
+                    let generator = generateSequence(1, 5);
+                    for await (let value of generator){
+                        alert(value);
+                    }
+                }) ();
+            · ASYNC ITERABLE RANGE - We can use "Symbol.asyncIterator" the same way we would use "Symbol.iterator" for an asynchronous generator:
+                    //...code...
+                    async *[Symbol.asyncIterator](){
+                        for (let value = this.from; value <= this.to; value++){
+                            yield value;
+                        }
+                    }
+                    //...code...
 
