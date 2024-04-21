@@ -63,3 +63,57 @@
             - No "bare" methods are allowed -> In the browser, "import" must have either a relative or absoulte URL, Modules without one are called "bare":
                     import {sayHi} from 'sayhi.js'; //error in browser, not in nodejs
             
+    · EXPORT AND IMPORT 
+        · EXPORT BEFORE DECLARATIONS - We can label any declaration as exported placing an "export" before it, be it a variable, a function or a class
+        · EXPORT APART FROM DECLARATIONS - We can put "export" separately, that is, first declaring and then exporting:
+                //say.js
+                function sayHi(user){
+                    alert(`Hi ${user}`);
+                }
+                function sayBye(){
+                    alert("Bye");
+                }
+                export {sayHi, sayBye};
+        · IMPORT* -> Usually, we put a list of things to import in curly braces "import{...}". We can however import everything as an object using import*:
+                import * as say from '/say.js'; //imports everything from module and puts it in the object say
+                say.sayHi("John"); //Hi John
+            · You can import everything without thinking about performance since tools such as webpack will import only the stuff you actually use ignoring the unused ones.
+        · IMPORT "as" - We can use "as" to import under different names:
+                import {sayHi as hi, sayBye as bye} from './say.js';
+                hi('John'); //Hi John
+        · EXPORT "as" - Same thing as import "as" but it sets the official names for outsiders:
+                export {sayHi as hi};
+                //1.js
+                import {hi} from './say.js'
+        
+        · EXPORT DEFAULT - When we have a file that exports only a single entity we may want to make it easier to import. We use "export default" (of which there can be 1 per file)
+          to make that entity the defalut thing that gets exported and then imported:
+                //user.js
+                export default class User{
+                    constructor(name){
+                        this.name = name;4
+                    }
+                }
+                //main.js
+                import User from './user.js'; // note that the import doesn't use {}
+                new User('John');
+            · Since it is exported by defalut, the entity may have no name:
+                    export default class{...} // no class name 
+            · If we have a mix of default and named entities, we import them like this:
+                    import {default as Name, namedEntity} from './';
+                    // or if we import it as an object
+                    import * as Name from './';
+                    Name.default; // the default export
+            · Since we can rename things that have been exported by default, it is not always a good idea to use it, especially in a large team 
+        · RE-EXPORT - Allows us to import things and immediatly export them, possibly under another name. The syntax is "export...from".
+          Basically is just a shorthand, instead of writing:
+                import{login, logout} from './helpers';
+                export {login, logout};
+            You can write:
+                export {login, logout} from './helpers';
+            So that another user doesn't have to deal with the file structure or for security reasons.
+            · Re-exported modules aren't available in the file where they are re-exported
+            · The default export has its own handling when re-exported which is spaghetti when we have defalut and named entities:
+                    export * from './user.js';         // to re-export named entities
+                    export {default} from './user.js'; // to re-export the default export 
+
