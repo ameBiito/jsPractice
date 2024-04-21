@@ -1,0 +1,30 @@
+· MODULES
+
+    · MODULES, INTRODUCTION - As an application grows bigger, we may want to split it into multiple files, so called "modules". A Module may contain a class, a library
+      or functoins for specific purposes.
+
+    · "export" and "import" -> These are keywords used to interchange functionality between modules:
+        - "export" -> Labels variables and functions that should be accessible from outside the current module
+        - "import" -> Allows the import functionality from other modules
+                //sayHi.js (file)
+                export function sayHi(user){
+                    alert(`Hi ${user}`);
+                }
+                //main.js (another file)
+                import {sayHi} from './sayHi.js';
+                sayHi('John'); // Hi John
+            · If used in an HTML file, when declaring them as a script you need to specify they're modules:
+                    <script type="module">
+                        import {sayHi} from `./sayHi.js;
+                        document.body.innerHTML = sayHi('John');
+                    </script>
+                · Modules can't run locally, either a static or live server have to be used.
+    · CORE MODULE FEATURES - Modules are different from regular scripts:
+        - They ALWAYS "use strict"
+        - Each Module has its own scope (\"_"/)
+        - A module code is evaluated only the first time when imported -> If the same module is imported into multiple other modules,
+          its code is executed only once, upon the first import. This has consequences:
+            - If executing a module brings side-effects, likke showing a message, then importing it multiple times, will trigger it only once:
+                    //alert.js
+                    alert("Module is evaluated");
+                    //
