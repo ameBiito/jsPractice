@@ -1,30 +1,65 @@
 · MODULES
 
     · MODULES, INTRODUCTION - As an application grows bigger, we may want to split it into multiple files, so called "modules". A Module may contain a class, a library
-      or functoins for specific purposes.
-
-    · "export" and "import" -> These are keywords used to interchange functionality between modules:
-        - "export" -> Labels variables and functions that should be accessible from outside the current module
-        - "import" -> Allows the import functionality from other modules
-                //sayHi.js (file)
-                export function sayHi(user){
-                    alert(`Hi ${user}`);
-                }
-                //main.js (another file)
-                import {sayHi} from './sayHi.js';
-                sayHi('John'); // Hi John
-            · If used in an HTML file, when declaring them as a script you need to specify they're modules:
-                    <script type="module">
-                        import {sayHi} from `./sayHi.js;
-                        document.body.innerHTML = sayHi('John');
-                    </script>
-                · Modules can't run locally, either a static or live server have to be used.
-    · CORE MODULE FEATURES - Modules are different from regular scripts:
-        - They ALWAYS "use strict"
-        - Each Module has its own scope (\"_"/)
-        - A module code is evaluated only the first time when imported -> If the same module is imported into multiple other modules,
-          its code is executed only once, upon the first import. This has consequences:
-            - If executing a module brings side-effects, likke showing a message, then importing it multiple times, will trigger it only once:
+      or functions for specific purposes.
+        · "export" and "import" -> These are keywords used to interchange functionality between modules:
+            - "export" -> Labels variables and functions that should be accessible from outside the current module
+            - "import" -> Allows the import functionality from other modules
+                    //sayHi.js (file)
+                    export function sayHi(user){
+                        alert(`Hi ${user}`);
+                    }
+                    //main.js (another file)
+                    import {sayHi} from './sayHi.js';
+                    sayHi('John'); // Hi John
+                · If used in an HTML file, when declaring them as a script you need to specify they're modules:
+                        <script type="module">
+                            import {sayHi} from `./sayHi.js;
+                            document.body.innerHTML = sayHi('John');
+                        </script>
+                    · Modules can't run locally, either a static or live server have to be used.
+        · CORE MODULE FEATURES - Modules are different from regular scripts:
+            - They ALWAYS "use strict"
+            - Each Module has its own scope (\"_"/)
+            - A module code is evaluated only the first time when imported -> If the same module is imported into multiple other modules,
+              its code is executed only once, upon the first import. This has consequences:
+            - If executing a module brings side-effects, like showing a message, then importing it multiple times, will trigger it only once:
                     //alert.js
                     alert("Module is evaluated");
-                    //
+                    //1.js
+                    import `alert.js`; // Module is evaluated
+                    //2.js
+                    import `alert.js`; // (shows nothing)
+                · Top-level modules should be usd for initializaiton, creation of module-specific internal data structures. If we need to make something callbale multiple times, we should export it as a function.
+            - This applies to other things, such as object creation:
+                    //admin.js
+                    export let admin = {
+                        name: "John"
+                    };
+                    //1.js
+                    import {admin} from './admin.js';
+                    admin.name = "Pete";
+                    //2.js
+                    import {admin} from './admin.js';
+                    alert(admin.name); // Pete 
+                · Now every file that imports that object shares the same object because the object is only created once and then the other files get a reference to the same thing.
+                · This behaviour can be useful because it allows to configure multiple modules using only an object
+            - "import.meta" -> The object "import.meta" contains the information about the current module.(its content vary on the environment)
+            - In a Module "this" is undefined 
+        · BROWSER SPECIFIC FEATURES - There are also browser-specific differences of scripts with 'type="module"': 
+            - Module scripts are deferred -> Theay are ALWAYS deferred (same effect as defer) for both external and inline scripts.
+              As a side effect, module scripts always "see" the fully loaded HTML-page including elements below them(regular scripts can't because they execute immediatly)
+            - Async works on inline scripts - For non-module scripts, the "async" attribute only works on external scripts. Async scripts run immediatly when ready,
+              independently of other scripts or the HTML document. For module scripts, it works on inline scripts as well.
+                    <script async type="module">
+                        import{counter} from './analytics.js';
+                        counter.count();
+                    </script>
+            - External Scripts -> External scripts that are type="module" are different in 2 aspects:
+                1. External scripts with the same "src" run only once:
+                        <script type="module" src="my.js"></script>
+                        <script type="module" src="my.js"></script> <!--The script my.js is fetched and executed only once -->
+                2. External scripts from another orgin(e.g another site) require CORS headers(headers that allow access from another origin) to ensure security
+            - No "bare" methods are allowed -> In the browser, "import" must have either a relative or absoulte URL, Modules without one are called "bare":
+                    import {sayHi} from 'sayhi.js'; //error in browser, not in nodejs
+            
