@@ -116,4 +116,18 @@
             · The default export has its own handling when re-exported which is spaghetti when we have defalut and named entities:
                     export * from './user.js';         // to re-export named entities
                     export {default} from './user.js'; // to re-export the default export 
-
+    
+    · DYNAMIC IMPORTS - We can't generate any parameters of "import" since it's a static construct, nor we can import conditionally or at run-time.
+        · THE "import()" EXPRESSION - The "import(module)" expression loads the module and returns a Promise that resolves into a module object that contains 
+          all its exports. It can be called from any piece of code and can be called dynamically:
+                let modulePath = prompt("Which module to load?");
+                import(modulePath)
+                    .then(obj => <moduleObject)
+                    .catch(err => <loading error e.g if no such module>);
+            · Or we could use "await"
+                    let {hi, bye} = await import("./say.js");
+                    hi();
+                    bye();
+            · Dynamic imports work in regular scripts, they don't need 'script type="module"'
+            · Although "import()" looks like a function, it isn't. It's a special syntax just like super(), so we can't copy it to a variable nor we can use "call"/"apply" with it.
+            
