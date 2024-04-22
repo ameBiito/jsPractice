@@ -61,10 +61,32 @@ alert(array[-2]);
  * P.S. In this task, please only take care about writing to a property. Other operations can be implemented in a similar way.
  */
 
-function makeObservable(target){
+let handlers = Symbol('handlers');
 
+function makeObservable(target){
+    //initialize handlers storing 
+    target[handlers] = [];
+    //store the handler function in array for future calls
+    target.observe = function(handler){
+        this[handlers].push(handler);
+    };
+
+    return new Proxy(target, {
+        set(target, property, value, receiver){
+            let success = Reflect.set(...arguments);
+            if(success){
+                target[handlers].forEach(handler => handler(property, value));
+            }
+            return success;
+        }
+    });
 }
 
 let user = {};
+user = makeObservable(user);
+user.observe((key, value) => {
+    alert(`SET ${key}=${value}`);
+});
+user.name = "John";
 
 
