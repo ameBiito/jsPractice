@@ -1,0 +1,245 @@
+· MISCELLANEOUS
+
+    · PROXY AND REFLECT - A "proxy" object wraps another object and intercepts operations, like reading/writing and others.
+        · PROXY - The syntax is:
+                let proxy = new Proxy(target, handler)
+            - "target" is an object to wrap, can be anything, including functions
+            - "handler" -> proxy configuration: an object with "traps", method that intercept operations("get" is a trap for reading a property of "target", set for writing and so on)
+                    let target = {};
+                    let proxy = new Proxy(target, {}); //empty handler
+                    proxy.test = 5; //writing to proxy
+                    alert(target.test); // 5 -> The property is now on target
+                    alert(proxy.test), // 5 -> The property is on proxy too
+                    for(let key in proxy)alert(key); // test 
+                · As there are no "traps", all operation on "proxy" are forwared to "target":
+                    1. A writing operation sets the value on target
+                    2. A reading operation returns the value from target
+                    3. Iteration over proxy returns the value from taget
+                · If there are no "traps", a Proxy is a transparent wrapper around target 
+                · Proxy is an object that doesn't have its own properties. With an empty handler, it transparently forward operations to target
+                · For most operations on objects, there's a so called "internal method" in the js specification. For example, [[Get]] is the internal method to read a property.
+                  Proxy intercepts invocation of these methods.
+            · DEFALUT VALUE WITH "get" TRAP - To intercept reading, the "handler" should have a method "get(target, property, receiver)"; It trigger when a property is read:
+                - "target" -> The target object, the one passed as the first argument of Proxy
+                - "property" -> Property name
+                - "receiver" -> The object that's going to be used as "this" in its call. Usually the Proxy object istelf
+                        let numbers = [0, 1, 2];
+                        numbers = new Proxy(number, { // -> the object is replaced by its proxy
+                            get(target, prop){
+                                if (prop in target){
+                                    return target[prop];
+                                } else {
+                                    return 0;
+                                }
+                            }
+                        });
+                        alert(numbers[1]); //1
+                        alert(number[123]); // 0 -> instead of undefined 
+                    · The Proxy should totally replace the target object evrywhere. No one should be able to access directly the object anymore 
+            · VALIDATION WITH "set" TRAP - The "set" trap triggers when a property is written "set(target, property, value, receiver)"
+                    let numbers = [];
+                    numbers = new Proxy(numbers, {
+                        set(target, prop, val){
+                            if(typeof(val) == 'number'){
+                                target[prop] = val;
+                                return true; // used for internal flags
+                            } else {
+                                return false;
+                            }
+                        }
+                    });
+                    numbers.push(1); // ok
+                    alert(numbers.length), //1
+                    number.push("test"); // TypeError ('set' on proxy returned false)
+                · Don't forget true if successful, false otherwise. It is very important for the [[Set]] flags
+            · ITERATION WITH "ownKeys" AND "getOwnPropertyDescriptor" - Methods such as "Object.keys" and "for...in" loops operate using the [[OwnPropertyKeys]] internal method.
+              This method is intercepted by Proxy using "ownKeys(target)":
+                    let user = {
+                        name: "John",
+                        age: 30,
+                        _password: "*****"
+                    };
+                    user = new Proxy(user, {
+                        ownKeys(target){
+                            return Object.keys(target).filter(key => !key.startsWith("_"));
+                        }
+                    });
+                    for(let key in user) alert(key); // name, age -> When displaying the keys, they are filtered  
+                    alert(Object.values(user)); // John, 30
+                · Although, if we return a key that doesn't exist, Object.keys won't list it since, it only return keys with the "enumerable" flag(descriptors).
+                  If we wanted to do that or we wanted to intercept the descriptors, we should use "getOwnPropertyDescriptor(target, prop)" which works with the 
+                  [[getOwnProperty]] internal method:
+                        let user = {};
+                        user = new Proxy(user, {
+                            ownKeys(target){
+                                return ['a', 'b', 'c'];
+                            },
+                            getOwnPropertyDescriptor(target, prop){
+                                return{
+                                    enumerable: true,
+                                    configurable: true,
+                                    /* can be other flags*/
+                                };
+                            }
+                        });
+                        alert(Object.keys(user)); //a, b, c 
+            · PROTECTED PROPERTIES WITH "deleteProperty" AND OTHER TRAPS - deleteProperty(target, prop) is used to intercept [[Delete]]. It must return a boolean flag to indicate operation status:
+                    //...code...
+                    deleteProperty(target, prop){
+                        if(prop.startsWith('_')){
+                            throw new Error("Access Denied");
+                        } else {
+                            delete target[prop];
+                            return true;
+                        }
+                    } 
+                    //...code...
+            · "in range" WITH "has" TRAP - The "has(target, property)" intercepts "in" calls 
+                    let range = {
+                        from: 1,
+                        end: 10
+                    };
+                    range = new Proxy(range, {
+                        has(target, prop){
+                            return prop >= target.from && prop <= target.end;
+                        }
+                    });
+                    alert(5 in range); // true
+                    alert(50 in range); // false 
+            · WRAPPING FUNCTIONS:"apply": We can wrap a Proxy around a function as well using "apply(target, thisArg, args):
+                - "target" -> The target function
+                - "thisArg" -> The value of "this"
+                - "args" -> A list of arguments 
+            · We can use Proxyies intead of decorators to wrap functions so that the original function properties can still be used:
+                    function delay(f, ms){
+                        return new Proxy(f, {
+                            apply(target, thisArg, args){
+                                setTimeout(() => target.apply(thisArg, args), ms);
+                            }
+                        });
+                    }
+                    function sayHi(user){
+                        alert(`Hi ${user}` );
+                    }
+                    sayHi = delay(sayHi, 1000);
+                    alert(sayHi.length); //1 -> Proxy forward length to the Object fuction 
+                    sayHi("Name"); // Hi Name (after 1000 ms)
+        · REFLECT - The "Reflect" makes it possible to call internal methods such as [[Get]], [[Set]], ... . Its methods are minimal wrappers around the internal methods:
+                let user = {};
+                Reflect.set(user, 'name', 'John');
+                alert(user.name); // John 
+            · In particular, "Reflect" allows us to call internal methods as they were an Object method(Reflect.construct, Reflect.deleteProperty, ...).
+              We can thus use "Reflect" to forward an operation to the original object since for every internal method trappable by Proxy, there is a corresponding
+              method in Reflect with the same name and arguments(this is used to make more transparent traps):
+                    let user = {name: 'John'};
+                    user = new Proxy(user, {
+                        get(target, prop, receiver){
+                            alert(`GET ${prop}`);
+                            return Reflect.get(target, prop, receiver);     // this is directly forwared to the object 
+                        },
+                        set(target, prop, val, receiver){
+                            alert(`SET ${prop}=${val}`);
+                            return Reflect.set(target, prop, val, receiver); // this is directly forwared to the object
+                        }
+                    });
+                · PROXYING A GETTER - Proxying a getter and using Reflect.get are similair, there are however nuances such that Reflect.get is better:
+                  Such a case is object inheritace, if we use a proxy we'll have this:  
+                        let user = {
+                            _name: "Guest",
+                            get name() {
+                            return this._name;
+                            }
+                        };
+                        let userProxy = new Proxy(user, {
+                            get(target, prop, receiver) {
+                                return target[prop]; // (*) target = user
+                            }
+                        });
+                        let admin = {
+                            __proto__: userProxy,
+                            _name: "Admin"
+                            };
+                        // Expected: Admin
+                        alert(admin.name); // outputs: Guest (?!?)
+                    · This happens because when searching for the get name() property, the trap is triggered for the original object around which we have built the proxy. We can fix this using Reflect:
+                            let user = {
+                            _name: "Guest",
+                            get name() {
+                            return this._name;
+                            }
+                        };
+                        let userProxy = new Proxy(user, {
+                            get(target, prop, receiver) {
+                                return Reflect.get(target, prop, receiver);
+                            }
+                        });
+                        let admin = {
+                            __proto__: userProxy,
+                            _name: "Admin"
+                            };
+                        alert(admin.name); //Admin
+        · PROXY LIMITATIONS - Proxies provide a great way to tweak behaviuor on a low level, there are limitations though:
+            · Buil-in objects use internal slots (like properties but reserved for internal, specification only puroposes). For instance, Map stores items in the 
+              internal slot [[MapData]], so [[Get]]/[[Set]] cannot access them and a proxy would thus fail if it tried.
+              This can be fixed:
+                    let map = new Map();
+                    let proxy = new Proxy(map, {
+                        get(target, prop, receiver){
+                            let value = Reflect.get(...arguments);
+                            return typeof value == 'function' ? value.bind(target) : value;
+                        }
+                    });
+                · Now the value of "this" inside proxy.set(...) is not the Proxy but the Map itself, so, when the internal implementation of "set" tries 
+                  to access this.[[MapData]], it succeeds.
+            · Arrays do NOT use internal slots 
+            · PRIVATE FIELDS - A similair thing happens with private class fields:
+                    class user {
+                        #name = "Guest",
+                        getName(){
+                            return this.#name;
+                        }
+                    }
+                    let user = new User;
+                    user = new Proxy(user, {});
+                    user.getName(); //Error 
+                · Private fields are implemented using internal slot. In the call getName() the value of "this" is the proxied user and it doen't have the slot with private fields,
+                  just like before, we can solve this using binding:
+                        class User {   
+                            #name = "Guest",
+                            getName(){
+                                return this.#name;
+                            }
+                        }
+                        let user = new User;
+                        user = new Proxy(user, {
+                            get(target, prop, receiver){
+                                let value = Reflect.get(...arguments);
+                                return typeof value == 'function' ? value.bind(target) : value;
+                            }
+                        });
+                        user.getName(); //Guest 
+                    · Just like before, this has a serious drawback as it exposes the orginal element through what should wrap it(the proxy)
+                    · Proxies and the entity they wrap are different objects. 
+                    · Proxies can't intercept a strict equity test (===) 
+        · REVOCABLE PROXIES - A revocable proxy is a proxy that can be disabled. The syntax is:
+                let {proxy, revoke} = Proxy.revocable(target, handler)
+            · The call returns an object with the "proxy" and "revoke" function to disable it, for example:
+                    let object = {
+                        data: "Valuable Data"
+                    };
+                    let {proxy, revoke} = Proxy.revocable(object, {});
+                    //...do something with the proxy...
+                    revoke();
+                    alert(proxy.data); // Error -> The proxy is no more accessible 
+                · Good practice is to put them in a WeakMap that has "proxy" as the key and the corresponding "revoke" as the value;
+                        let revokes = new WeakMap();
+                        let object = {
+                            data: "Valuable Data"
+                        };
+                        let {proxy, revoke} = Proxy.revocable(object, {});
+                        revokes.set(proxy, revoke);
+                        //...a few moments later...
+                        revoke = revokes.get(proxy);
+                        revoke();
+                        proxy.data; // Error 
+                    · We use WeakMap so that when revoked, the proxy becomes unreachable and is removed from memory.
