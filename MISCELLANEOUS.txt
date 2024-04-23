@@ -243,3 +243,18 @@
                         revoke();
                         proxy.data; // Error 
                     · We use WeakMap so that when revoked, the proxy becomes unreachable and is removed from memory.
+
+    · EVAL - The built in "eval" allows to execute a string of code. The syntax is "let result = eval(code)", for example:
+            let code = 'alert("Hello")';
+            eval(code); //Hello 
+        · The result of "eval" is the result of the last statement
+                let value = eval('let i = 0; i++'); //1
+        · The eval'ed code is executed in the current lexical environment, so it can see outer variables and change their value:
+                let a = 1;
+                eval('alert(a)'); //1
+                eval('a = 5');
+                alert(a); //5
+        · In "strict mode"(so always) "eval" has its own lexical environment, so, variables declared inside it aren't visible outside 
+        · Eval is used very sparingly as it's now considered bad practice, use "new Function" instead as it has more compatibility with minifiers
+          and its lexical environment is the global one.
+        
