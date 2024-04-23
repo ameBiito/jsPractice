@@ -258,3 +258,36 @@
         · Eval is used very sparingly as it's now considered bad practice, use "new Function" instead as it has more compatibility with minifiers
           and its lexical environment is the global one.
         
+    · CURRYING - Currying is an advanced technique of working with functions, it's not only used in js but in other languages as well.
+      "Currying" is a transformation of functions that translate a function from callable as "f(a, b, c)" into callable as f(a)(b)(c):
+            function curry(f){
+                return function(a){
+                    return function(b){
+                        return f(a, b);
+                    };
+                };
+            }
+            function sum(a, b){
+                return a+b;
+            }
+            let curriedSum = curry(sum);
+            curriedSum(1)(2); //3
+        · "_.curry" from loadash library does this in a way so that the call can be done in both ways:
+                let curriedSum = _.curry(sum);
+                curriedSum(1, 2); //3
+                curriedSum(1)(2); //3
+        · Currying is useful when we only have some arguments and we want to call a function with what we have and then we can call the same function again with the missing arguments
+        · The implementation is quite simple:
+                function curry(func){
+                    return function curried(...args){
+                        if(args.length >= func.length){
+                            return func.apply(this, args);
+                        } else {
+                            return function(...args2){
+                                return curried.apply(this, args.concat(args2));
+                            }
+                        }
+                    }
+                }
+
+

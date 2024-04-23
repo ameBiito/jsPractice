@@ -81,12 +81,18 @@ function makeObservable(target){
         }
     });
 }
-
+/*
 let user = {};
 user = makeObservable(user);
 user.observe((key, value) => {
     alert(`SET ${key}=${value}`);
 });
 user.name = "John";
+*/
+
+
+let a = prompt("Enter an aritmetic expression", "0");
+let res = eval(a);
+alert(res);
 
 
