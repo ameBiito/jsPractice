@@ -336,3 +336,20 @@
             · Operators such as && and || work just fine:
                     alert(1n || 2); // 1 (1n is truthy)
                     alert(0n || 2); // 2 (0n is falsy)
+
+    · UNICODE, STRING INTERNALS - Js strings are based on Unicode. Js allows us to insert a character into a string by specifying its hex Unicode code 
+      with one of these 3 notations:
+        1. \xXX -> XX are 2 hex digits with value that ranges from 00 to FF(0 to 255)
+        2. \uXXXX -> XXXX must be 4 hex digits with values that ranges from 0000 to FFFF (0 to 65535)
+        3. \u{X...XXXXXX} -> X...XXXXXX must be an hex with value from 0 to 10FFFF (the highest code point defined by UNICODE)
+    · DIACRITCAL MARKS AND NORMALIZATION - There are many characters that use base letter (a) and add something to change its meaning (à) and since there 
+      are too many combinations, they are created using composition:
+            alert('S\u0307'); // Ṡ -> adds a dot above the S 
+        · If we need additional markings, we just add them:
+                alert('S\u0307\u0323'); // Ṩ
+        · This is fun and all but creates some problems since two character can look the same but be different:
+                let s1 = 'S\u0307\u0323'; // dot above and below
+                let s2 = 'S\u0323\u0307'; // dot below and above
+                alert(s1 == s2); //false -> even though they look the same 
+            · To solve this, we use "str.normalize()" which brings each string to the single "normal" form:
+                    alert(s1.normalize() == s2.normalize()); // true 
