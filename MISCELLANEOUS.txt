@@ -290,4 +290,25 @@
                     }
                 }
 
-
+    · REFERENCE TYPE - A dynamically evaluated method can lose "this":
+            let user = {
+                name: "john",
+                hi() {alert(this.name);},
+                bye() {alert("Bye");}
+            };
+            user.hi();
+            //now let's call hi or bye depending on the name
+            (user.name == "john" ? user.hi : user.bye )(); //Error 
+        · To understand, think about an object's method call: 
+            1. It retrieves the method using the "." operator (obj.method)
+            2. The method is executed using the "()" (obj.method() // does something)
+          If we were to do the same through code we would get an error:
+                let hola = user.hi;
+                hola(); // Error because "this" is undefined
+        · Js is able to do this because the dot"." doesn't return a function, it returns a special value, "Reference Type"(used exclusively by the engine)
+            · The value of "Reference Type" is a 3 value combination (base, name, strict) where:
+                - "base" -> The object
+                - "name" -> The property name
+                - "strict" -> True if "use strict" is in effect 
+              In the case of user, it is: (user, "hi", true)
+            · When "()" are called on the "Reference Type", they receive full information about the object and its method and can set the right "this"
