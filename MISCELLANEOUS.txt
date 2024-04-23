@@ -312,3 +312,27 @@
                 - "strict" -> True if "use strict" is in effect 
               In the case of user, it is: (user, "hi", true)
             · When "()" are called on the "Reference Type", they receive full information about the object and its method and can set the right "this"
+
+    · BIGINT - "BigInt" is a numeric type that provides support for integers of arbitrary length. A "BigInt" is created by appending "n" to end of an integer or by 
+      calling the function "BigInt" that creates bigints from strings, numbers, ...
+            const bigint = 4253634655472542548274n; // -> notice the n 
+            const sameBigint = BigInt(4253634655472542548274);
+            const bigIntFromNumber = BigInt(10); //same as 10n 
+        · MATH OPERATORS - All operation on "BigInt" return a "BigInt", we can't mix it with normal numbers and in such cases we need to explicitly convert it,
+          also, the results are all floored to an integer, there are no decimal numbers:
+                1n+2n; // 3n
+                5n/2n; //2n
+                1n + 2; //error
+            · The "unary plus" (+) before a value (used to convert value to a number) is NOT supported.
+        · COMPARISONS - The operatos >/</==/=== work fine, note that 1 !== 1n
+                2n > 1n; //true
+                2n > 1; //true 
+                1 == 1n; //true
+                1 === 1n; //false 
+        · BOOLEAN OPERATIONS - When inside an "if" or other boolean operators, bigints behave like numbers:
+                if(0n){
+                    //not executed because 0 is falsy, so, 0n is as well 
+                }
+            · Operators such as && and || work just fine:
+                    alert(1n || 2); // 1 (1n is truthy)
+                    alert(0n || 2); // 2 (0n is falsy)
