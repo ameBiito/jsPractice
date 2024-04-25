@@ -32,4 +32,71 @@
           - "comments" 
 
     · WALKING THE DOM - All operations on the DOM start with the "document" object throgh which we can reach every element.
-        · "documentELement" AND "body" - The topmos document node is "document.documentELement", that's the dome of the <html> tag. 
+        · ONTOP - The topmost tree nodes are available directly as "document" properties:
+            - "document.documentELement" -> The DOM node of the <html> tag, the topmost one.
+            - "document.body" -> The DOM node of the <body> tag .
+            - "document.head" -> The DOM node of the <head> tag.
+                · A script cannot access an element that doesn't exist at the moment of running(if you're inside <head>, you can't access <body>):
+                        <head>
+                            <script> alert(document.body); </script> // null, there's no <body> tag 
+                        </head>
+                        <body>
+                            <script> alert(document.body); </script> // HTMLBodyElement 
+                        </body>
+                    · In DOM, null means "doesn't exist" or "no such code" 
+        · CHILDREN - 
+            - "Child nodes"(or children) -> Elements that are direct children. For instance <head> and <body> are children of <html>.
+                    <html>
+                    <body>
+                        <div>Begin</div>
+                        <ul>
+                            <li>
+                            </li>
+                        </ul>
+                · Here <div> and <ul> are children of <body> 
+            - "Descendants" -> All elements that are nested in the given one, including children, their children and so on. In the above case, <div>, <ul> and <li>
+               are descendants of <body>
+            · "childNodes" -> The "childNodes" collection lists all child nodes, including text nodes:
+                    <html>
+                        <body>
+                            <div>Begin</div>
+                            <ul>
+                                <li>information</li>
+                            </ul>
+                            <div>End</div>
+                            <script>
+                                for(let i = 0; i < document.body.childNodes.length; i++){
+                                    alert(document.body.childNodes[i]); //Text, DIV, Text, ..., SCRIPT 
+                                }
+                            </script>
+                        </body>
+                    </html>
+                · firstChild gives access to the first child, lastChild to the last one.
+                · elem.hasChildNodes() -> Checks wether there are any children nodes 
+        · DOM COLLECTIONS - "childNodes" is a Collection, an array-like iterable. We can thus use for..of on it and we can create an Array with it (Array.from(iterable))
+            · All of these collections are Read-only
+            · Almost all DOM collections are live(they reflect the current state of DOM)
+        · SIBILINGS AND PARENT - Sibilings are child nodes of the same parent node:
+                <html>
+                    <head>...</head><body>...</body>
+                </html>
+            · Here, <head> and <body> are sibilings, <body> is the "next" or "right" of <head>; <heas> is the "previous" or "left" of <body>.
+              We can access the next or previous sibing using "nextSibiling" or "previousSibiling" properties. The parent is available as "parentNode"
+        · ELEMENT-ONLY NAVIGATION - In the navigation properties listed above we can see both text nodes, element nodes and even comment nodes but for many taks we don't 
+          wanna see text and comment nodes, so we use these to see only the element nodes:
+                - "children" -> Only those children that are element nodes 
+                - "firstElementChild", "lastElementChild" -> First and last element children 
+                - "previuosElementSibiling", "nextElementSibiling" -> Neighbouring elements
+                - "parentElement" -> Parent element(returns the same as parentNode except for this exception:)
+                        document.documentElement.parentNode; //document
+                        document.documentElement.parentElement; //null
+                    · This is because the root node (<html>) has "document" as its parent but "document" isn't an element node 
+        · TABLES - Certain type of DOM may provide additional properties specific to their type, for example, <table>:
+            - table.rows -> The collection of <tr> elements of the table 
+            - table.caption/tHead/tFoot -> References to elements <caption>, <thead>, <tfoot>
+            - table.tBodies -> The collection of <tbody> elements(according to the standard, there has to be at least 1 element(if not present, it is added by the browser))
+            - [tBody/tHead/tFoot].rows -> The collection of <tr> inside the element
+            - tr.cells -> The collection of <td> and <th> cells inside the given <tr>
+            - tr.sectionRowIndex -> The index of the given <tr> inside the enclosing <thead>/<tbody>/<tfoot>
+            - [<td>/<th>].cellIndex -> The number of the cell inside the enclosing <tr>
+          
