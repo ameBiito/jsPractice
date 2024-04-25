@@ -1,0 +1,35 @@
+· DOCUMENT 
+
+    · BROWSER ENVIRONMENT, SPECS - Everything that can run js is called a "host environment" either be it a browser, server, ... .
+      A host environment provides its own objects and functions in additions to the language core.
+        · DOM(DOCUMENT MODEL OBJECT) - The DOM represents all the page content as objects that can be modified.
+          The "document" object is the main entry point to the page, we change or create anything regarding the page using it:
+                document.body.style.background = "red"; //changes background color to red 
+                setTimeout(() => document.body.style.background = "", 1000 ) // changes it back after 1 sec
+            · DOM can be used for server-side scripts as well (not only browsers)
+            · CSSOM is used together with DOM to modify CSS rules from js
+        · BOM(BROWSER OBJECT MODEL) - The BOM represents additional objects provided by the host environment for working with everything except the document. For instance:
+            - The "navigator" object provides background information about the browser and the os
+            - The "location" object allows us to read the current URL and can redirect the browser to a new one. For example:
+                    alert(location.href); //shows current URL 
+                    if(confirm("Go to Wikipedia?")){
+                        location.href = "https://wikipedia.org";
+                    }
+    
+    · DOM TREE - The backbone of an HTML document is tags. According to DOM, every tag is an object. These objects are accessible using js and through them we can 
+      modify a page. For example, document.body is an object reprenting the <body> tag:
+            document.body.syle.background = 'red'; // the background of body is now red colored
+        · Tags are "element nodes" and they form a tree structure.
+        · The text inside the elements forms "text nodes" labelled as #text. Text nodes may only contain a string, they are always the leaf of a tree and thus cannot have children
+        · AUTOCORRECTION - If the browser encouters a malfourmed HTML, it corrects it automatically when making the DOM. For instance, the top tag is always
+          <html>, even if it doesn't exisat in the document, it will exist in the DOM because the browser will create it, same thing for <body>.
+          Same thing for unclosed tags. Also, even though you can omit it when writing the document, tables must have the <tbody> tag, it is thus added automatically.
+        · Comments are a node type and they're labelled as #comment as well as <!DOCTYPE...> . Everything inside an HTML document is part of DOM.
+        · There are 12 node types but in practice we usually work with 4 of them:
+          - "document" -> The entry point into DOM 
+          - "element nodes" -> HTML-tags, the tree building blocks
+          - "text nodes" -> Contain text
+          - "comments" 
+
+    · WALKING THE DOM - All operations on the DOM start with the "document" object throgh which we can reach every element.
+        · "documentELement" AND "body" - The topmos document node is "document.documentELement", that's the dome of the <html> tag. 
