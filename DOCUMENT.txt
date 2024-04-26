@@ -152,4 +152,90 @@
                     alert(divs.length); //2
                     alert(divs2.length); //1
                 </script> 
-          
+
+    · NODE PROPERTIES: TYPE, TAG AND CONTENTS
+        · DOM NODE CLASS - Different DOM nodes may have different properties(<a> is different from <input>). However, there are also properties and methods
+          shared by all off them because all classes of DOM nodes form a single hierarcy. Each DOM node belongs to the corresponding built-in class, which are:
+            - EventTarget -> The "root" abstract class for everything(serves as a base, so that all DOM nodes can support "events")
+            - Node -> Base for DOM nodes, it is an abstract class (a class from which objects are not created)
+            - Document -> A document as a whole, usually inherited by HTMLDocument(the document global object belongs to this class, serves as entry point into the DOM)
+            - CharacterDatra -> An abstract class inherited by:
+                - Text -> Class for text inside elements, ex: Hello in <p>Hello</p>
+                - Comment -> Class for comments 
+            - Element -> The base class for DOM elements, provides navigation and searching methods and it is used as a base for more specific classes
+            - HTMLElement -> The base class for all HTML elements; it is inherited by concrete HTML elements:
+                - HTMLInputElement -> The class for <input> elements
+                - HTMLBodyElement -> The class for <body> elements
+                - ...and so on
+            · If, for example, we wanted to trace back <input> chain of inheritance, it would be:
+                - HTMLInputElement -> Provides input specific properties
+                - HTMLElement -> Provides common HTML element methods(and getters/setters)
+                - Element -> Provides generic element methods
+                - Node -> Provies common DOM node properties
+                - EventTarget -> Gives the support for events
+                - Object -> It all inherits from this, so, methods like hasOwnProperty are also available
+            · As you can see above, nodes are just js objects that use prototype-based classes for inheritance          
+        · "console.log(elem)" is equivalent in plain js to "console.dir(elem)", however if used in the browser console, the first shows the element DOM tree 
+          while the second one shows the element as a DOM object 
+        · THE "nodeType" PROPERTY - "elem.nodeType" returns a numeric value based on the type of the node 
+            - elem.nodeType == 1 -> Element nodes 
+            - elem.nodeType == 3 -> Text nodes 
+            - elem.nodeType == 9 -> The Document object
+            - ...look the specification (https://dom.spec.whatwg.org/#node)
+          Can be used instead of "instanceof" 
+        · TAG: "nodeName" AND "tagName" -> Given a DOM node, we can read its tag name using "nodeName" or "tagName":
+                document.body.nodeName; //BODY
+                document.body.tagName;  //BODY
+            · There is a subtle difference between the 2:
+                - "tagName" exists only for "Element" nodes 
+                - "nodeName" is defined for any "Node":
+                    - for elements, it's the same as tagName 
+                    - for other nodes (text,comment, etc) it has a string with the node type 
+        · "innerHTML": THE CONTENTS - The "elem.innerHTML" property allows to get the HTML inside the "elem" as a string. We can also use this property to modify 
+          the html script:
+                <body>
+                    <div> A div</div>
+                    <script>
+                        alert(document.body.innerHTML);  // shows the <div> and the <script>
+                        document.body.innerHTML = "<p>Now it's gone</p>";
+                    </script>
+                </body>
+            · We can also write scripts in innerHTML and make them become part of the page, however they won't execute 
+            · Even though you may think "elem.innerHTML += something" adds "something" to the html document, it doesn't, it overwrites the previous document with "something". It is thus equivalent to: "elem.body.innerHTML = something"
+        · FULL HTML OF THE ELEMENT - The "elem.outerHTML" contains the full HTML of the element, just like innerHTML plus the element itself:
+                <div id="elem">Hello<b>World</b></div>
+                <script>
+                    alert(elem.outerHTML); //  <div id="elem">Hello<b>World</b></div>
+                </script> 
+            · When modifying an HTML piece using outerHTML, the element is not changed, instead, it is replaced. That is: The new lines go in its place, however, 
+              references to that element are not deleted and thus is still accessible:
+                    <div> Hello </div>
+                    <script>
+                        let div = document.querySelector('div'); 
+                        div.outerHTML = '<p>Different stuff</p>';
+                        alert(div.outerHTML); //  <div> Hello </div> -> Still an accessible reference 
+                    </script>
+        · TEXT NODE CONTENT - "innerHTML" is ONLY valid for element nodes, other types (text, comments) have their counterpart: nodeValue and data which are almost the same:
+                <body>
+                    Hello
+                    <!-- Comment -->
+                    <script>
+                        let text = document.body.firstChild;
+                        alert(text.data); //Hello
+                        let comment = text.nextSibiling;
+                        alert(comment.data); //Comment
+                    </script>
+                </body>
+        · PURE TEXT - The "textContent" provides access to the text inside the element minus all the <tags>:(literally innerHTML without the tags)
+            · Can be used to insert strings exclusively as every character is treated as a literal.
+        · THE "hidden" PROPERTY - The "hidden" attribute specifies wether an element is visible or not(same as style="display:none"):
+                <div id="elem"> A blinking element</div>
+                <script>
+                    setInterval(() => elem.hidden = !elem.hidden, 1000)
+                </script>
+        · MORE PROPERTIES - DOM elements have so many more properties which can be found in the specification, for instance:
+            - "value" -> The value for <input>, <select> and <textarea>
+            - "href" -> The href for <a href="...">
+            - "id" -> The value of "id" attribute for all elements
+            - and so much more in the next episode of "I have to read so many manuals". See ya!
+             
