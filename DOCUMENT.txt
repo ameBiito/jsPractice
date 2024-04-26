@@ -99,4 +99,57 @@
             - tr.cells -> The collection of <td> and <th> cells inside the given <tr>
             - tr.sectionRowIndex -> The index of the given <tr> inside the enclosing <thead>/<tbody>/<tfoot>
             - [<td>/<th>].cellIndex -> The number of the cell inside the enclosing <tr>
+
+    · SEARCHING IN A DOCUMENT
+        · "document.getElementById" - If an element has an id attribute, we can get the element using "document.getElementById(id)":
+                <div id="elem">
+                    <div id="elem-content">Element</div>
+                </div>
+                <script>
+                    let elem = document.getElementById("elem");
+                    elem.style.backgroundColor = 'red';
+                </script>
+            · Using ids to access an element is considered bad practice when writing js code, it is good for some little inline scripts.
+            · Ids must be unique, or else the engine will return one of the elements with the same id without a logic 
+        · "querySelectorAll" - "elem.querySelectorAll(css)" returns all elements inside "elem" matching the given CSS selector:
+                <ul>
+                    <li>The</li>
+                    <li>test</li>
+                </ul>
+                <ul>
+                    <li>has</li>
+                    <li>passed</li>
+                </ul>
+                <script>
+                    let elements = document.querySelectorAll('ul > li:last-child');
+                    for (let elem of elements) {
+                        alert(elem.innerHTML); // "test", "passed"
+                    }         
+                </script>   
+        · "querySelector" - Returns the first found element of "elem.querySelectorAll(css)", it is thus equivalent to: "elem.querySelectorAll(css)[0]"
+        · "matches" - The "elem.matches(css)" method returns true if elem matches the css-selector, false otherwise.(Useful when we are iterating and we only need one kind of element)
+                <a href="https://something.zip">
+                <!--other links-->
+                <script>
+                    for(let elem of document.body.children){
+                        if(elem.matches('a[href$="zip"]')){
+                            alert("The archive reference" + elem.href);
+                        }
+                    }
+                </script>
+        · "closest" - "elem.closest(css)" looks for the nearest ancestor that matches the CSS-selector. The "elem" itself is also included in the research
+        · LIVE COLLECTIONS - All methods "getElementsBy[TagName/ClassName/Name]"(legacy) return a live collection. Such connections auto-update when the element 
+          changes whereas querySelectorAll returns a static collection:
+                <div>First div</div>
+                <script>
+                    let divs = document.getElementsByTagName('div');
+                    let divs2 = document.querySelectorAll('div');
+                    alert(divs.length); //1
+                    alert(divs2.length); //1
+                </script>
+                <div>Second div</div>
+                <script>
+                    alert(divs.length); //2
+                    alert(divs2.length); //1
+                </script> 
           
