@@ -5,3 +5,9 @@
  * 2.The number of nested <li> – all descendants, including the deeply nested ones.
  */
 
+function a(){
+    for(let li of document.querySelectorAll('li')){
+        let title = li.firstChild.data;
+    }
+
+}

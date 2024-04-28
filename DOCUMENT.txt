@@ -238,4 +238,25 @@
             - "href" -> The href for <a href="...">
             - "id" -> The value of "id" attribute for all elements
             - and so much more in the next episode of "I have to read so many manuals". See ya!
-             
+
+    · ATTRIBUTES AND PROPERTIES - When the browser loads the page, it parses(reads) the HTML and generates DOM objects from it. For elements nodes, most standard
+      HTML attributes become properties of DOM objects, for instance, if the tag is "<body id="page">" then the DOM objet has body.id="page".
+        · DOM PROPERTIES - DOM nodes are regular js objects, we can alter them:
+                document.body.myData = {
+                    name: "Caeser",
+                    title: "Imperator"
+                };
+                document.body.myData.title; //Imperator
+            · We can add methods as well:
+                    document.body.sayTagName = function(){
+                        alert(this.tagName);
+                    };
+                    document.body.sayTagName(); //BODY
+        · HTML ATTRIBUTES - In HTML, tags may have attributes. When the browser parses the HTML to create DOM objects for tags, it recogizes standard 
+          attributes and creates DOM properties from them. This means that this thing happens for "standard attributes" not custom ones:
+                <body id="test" something="non-standard">
+                    <script>
+                        alert(document.body.id); //test 
+                        alert(document.body.something); //undefined 
+                    </script>
+                </body>
