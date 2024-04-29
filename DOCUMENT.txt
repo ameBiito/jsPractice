@@ -260,3 +260,56 @@
                         alert(document.body.something); //undefined 
                     </script>
                 </body>
+            · Note that a standard attribute for an element can be unknown for another one("type" is standard for <input> but not for <body>).
+            · In order to access non-standard attributes, we use the following methods:
+                · elem.hasAttribute(name) -> Checks for attribute existance  
+                · elem.getAttribute(name) -> Gets the value
+                · elem.setAttribute(name, value) -> Sets the value 
+                · elem.removeAttribute(name) -> Removes the attribute 
+                        <body something="non-standard">
+                            <script> 
+                                alert(document.body.getAttribute(something)); //non-standard
+                            </script>
+                        </body>
+            · HTML attributes have the following features:
+                - Their name is case insesitive (id == ID)
+                - Their values are always strings (elem.setAttribute('Attr', 123); // -> the value of attr is "123")
+                - "elemName.attribute" returns an iterable collection of all the attributes 
+                · PROPERTY ATTRIBUTE SYNCHRONIZATION - When a standard attribute changes, the corresponding property is auto-updated and (with some exceptions) vice-versa:
+                        <input>
+                        <script>
+                            let input = document.querySelector('input');
+                            input.setAttribute('id', 'id');       // -> attribute => property
+                            input.setAttribute('value', 'text');  // -> attribute => property
+                            alert(input.id + ", " + input.value); //id, text
+                            input.value = 'newValue';
+                            input.id = 'newId';
+                            alert(input.getAttribute('id')); //newId -> (property => attribute)
+                            alert(input.getAttribute('value')); //text -> It didn't change ( property !=> attribute)  
+                        </script>
+        · DOM PROPERTIES ARE TYPED - DOM properties are not always strings, for instance checkboxes are booleans 
+        · NON STANDARD ATTRIBUTES, DATASET - Sometimes, non-standard attributes are used to pass custom data from HTML to js or to "mark" HTML elements for js:
+                <div show-info="name"></div>
+                <!-- and age here -->
+                <div show-info="age"></div>
+                    <script>
+                    // the code finds an element with the mark and shows what's requested
+                    let user = {
+                        name: "Pete",
+                        age: 25
+                    };
+                    for(let div of document.querySelectorAll('[show-info]')) {
+                        // insert the corresponding info into the field
+                        let field = div.getAttribute('show-info');
+                        div.innerHTML = user[field]; // first Pete into "name", then 25 into "age"
+                    }
+                    </script>
+            · Being marked, they can be used for styling puroposes for a process that has several phases, each one with a different style, color, ...
+            · Since HTML is an alive language, the custom keywords we used could be in the future be used for a standard attribute that does something different. 
+              For this reason we have "data-" attributes: all elements starting with "data-" are reserved for programmer use. They are available in the "dataset" property, 
+              for example, if an "elem" has an attribute named "data-about" is available as "elem.dataset.about":
+                    <body data-about="Elephants">
+                    <script>
+                        alert(doucment.body.dataset.about); //Elephants
+                    </script>
+                
