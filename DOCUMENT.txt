@@ -312,4 +312,5 @@
                     <script>
                         alert(doucment.body.dataset.about); //Elephants
                     </script>
+                · Multiword attributes like "data-order-state" become camel cased : "dataset.orderState"
                 
