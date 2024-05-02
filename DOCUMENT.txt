@@ -313,4 +313,132 @@
                         alert(doucment.body.dataset.about); //Elephants
                     </script>
                 · Multiword attributes like "data-order-state" become camel cased : "dataset.orderState"
-                
+
+    · MODIFYING THE DOCUMENT - DOM moddification is the key to creating "live pages"
+        · Let's begin with an example, showing a message:
+                <style>
+                    .alert{
+                        padding: 15px;
+                        border: 1px solid #d6e9c6;
+                        border-radius: 4px;
+                        color: #3c763d;
+                        background-color: #dff0d8;
+                    }   
+                </style>
+                <div class="alert">
+                    <strong> Hi there</strong>This is an important message
+                </div>
+            · This was an html example of how to create a message box with a message in it, all of this can be made through js
+        · CREATING THE MESSAGE - Creating the message <div> takes 3 steps:
+                let div = document.createElement('div');
+                div.className = 'alert';
+                div.innerHTML = "<strong>Hi There</strong>This is an important message";
+            · The element is now created but it still doesn't exist in the DOM 
+            · INSERTION METHODS - To make the message <div> show up, we need to insert it into the DOM, for this we use "document.somewhere.append(element)":
+                    //...styling for the message 
+                    <script>
+                        let div = document.createElement('div');
+                        div.className = 'alert';
+                        div.innerHTML = "<strong>Hi There</strong>This is an important message";
+                        document.body.append(div); // we append the div inside the document's body 
+                    </script>
+                · There are several insertion methods:
+                    - "node.append(...nodes or strings)" -> Appends nodes or strings at the end of "node"
+                    - "node.prepend(...nodes or strings)" -> Inserts nodes or strings at the beginning of "node"
+                    - "node.before(...nodes or strings)" -> Inserts nodes or strings before the "node"
+                    - "node.after(...nodes or strings)" -> Inserts nodes or strings after "node" 
+                    - "node.replaceWith(...nodes or strings) -> Replaces "node" with the given node or string 
+                    · All of these methods can also insert multiple elements at once:
+                            <div id="div">
+                            <script>
+                                div.before(<p>Hello</p>, document.createElement('hr'));
+                            </script>
+                        · Note that the text is inserted "as text" in a safe way not as "HTML", so the result of the previous script is:
+                                &lt;p&gt;Hello&lt;/p&gt; //-> safe way like elem.textContent
+                                <hr>
+                                <div id="div">
+                        · INSERT AN HTML COMMANDS - Since we can't use the previuosly mentioned methods to insert HTML lines, we need to use another method:
+                          "elem.insertAdjacentHTML(where, html)" where "html" is the code we want to insert, while "where" is a codeword that specifies where to insert, it must be one of the following parameters:
+                            - "beforebegin" -> Insert "html" immediatly before "elem"
+                            - "afterbegin" ->  Insert "html" into "elem", at the beginning
+                            - "beforeend" -> Insert "html" into elem, at the end 
+                            - "afterend" -> Insert "html" immediatly after "elem" 
+                                    <div id="div"></div>
+                                    <script>
+                                        div.insertAdjacentHTML('beforebegin', '<p>Hello</p>');
+                                        div.insertAdjacentHTML('afterend', '<p>Bye</p>');
+                                    <script>
+                                Leads to:
+                                    <p>Hello</p>
+                                    <div id="div"></div>
+                                    <p>Bye</p>
+        · NODE REMOVAL - To remove a node, there's a method: "node.remove()":
+                <script>
+                    let div = document.createElement('div');
+                    div.className = 'alert';
+                    div.innerHTML = "<strong>This is a message</strong> You've read a message";
+                    document.body.append(div);
+                    setTimeout(() => div.remove(), 1000);     //remove node after 1 sec 
+                </script>
+        · CLONING NODES - There are 2 ways to clone elements in HTML: 
+            - "elem.cloneNode(true)" -> Creates a deep clone of the "elem" with all attributes and subelements 
+            - "elem.cloneNode(false)" -> Creates a clone without child elements 
+                    <div class="alert" id="div">
+                        <strong>Hi there!</strong>This is a message 
+                    </div>
+                    <script>
+                        let div2 = div.cloneNode(true);
+                        div2.querySelector('strong').innerHTML = "Bye there!";
+                        div.after(div2);
+                    </script>
+                Leads to:
+                    <div class="alert" id="div">
+                        <strong>Hi there!</strong>This is a message
+                    </div>
+                    <div class="alert" id="div">
+                        <strong>Bye there!</strong> This is a message
+                    </div>
+        · DOCUMENT FRAGMENT - "DocumentFragment" is a special DOM node that serves as a wrapper to pass around lists of nodes. We can append other nodes to it 
+          but whenwe insert it somewhere, then its content is insterted instead, for example:
+                <ul id="ul"></ul>
+                <script>
+                    function getListContent(){
+                        let fragment = new DocumentFragment();
+                        for(let i = 1; i<=3; i++){
+                            let li = document.createElement('li');
+                            li.append(i);
+                            fragment.append(li);
+                        }
+                        return fragment;
+                    }
+                    ul.append(getListContent());
+                </script>
+            The resulting structure will be:
+                <ul>
+                    <li>1</li>
+                    <li>2</li>
+                    <li>3</li>
+                </ul>
+            · This way of appending nodes is rarely used since we have a more explicit way of doing it:
+                <script>
+                    function getListContent(){
+                        let result = [];
+                        for(let i = 1; i<=3; i++){
+                            let li = document.createElement('li');
+                            li.append(i);
+                            result.push(li);
+                        }
+                        return result;
+                    } 
+                    ul.append(...getListContent()); 
+                </script>
+        · DOCUMENT.WRITE - "document.write" is an ancient way to add something to a web-page:
+                <p>...Somewhere in the page</p>
+                <script>
+                    document.write('<b>Hello from JS</b>');
+                <script>
+            · The call to "document.write(html)" writes the "html" into page "right here and now". The "html" string can be dynamically generated.
+              It has an important limitation: the call to "document.write" only works while the page is loading, if we happen to call it after, the existing 
+              document content is ERASED. However, not having any DOM modifications, it works blazingly fast and so, it can be used if we want to insert a lot 
+              of text in a loading page where the speed matters.
+            
