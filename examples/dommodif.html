@@ -1,0 +1,106 @@
+<!--Create a function clear(elem) that removes everything from the element-->
+<!--
+<ol id="elem">
+    <li>Hello</li>
+    <li>World</li>
+</ol>
+
+<script>
+    function clear(elem){
+        let counter = elem.childNodes.length -1;
+        while(counter >= 0){
+            elem.firstChild.remove();
+            counter--;
+        }
+    }
+    function betterClear(elem){
+        elem.innerHTML = '';
+    }
+    clear(elem);
+</script>
+-->
+<!-- Write an interface to create a list from user input.-->
+<!--1.Ask a user about its content using prompt
+    2.Create the <li> with it and add it to <ul>
+    3.Continue until the user cancels the input (by pressing Esc or via an empty entry).-->
+<!--If a user types HTML-tags, they should be treated like a text.-->
+
+
+<html>
+    <body>
+        <div id="container">
+
+        </div>
+    </body>
+    <script>
+        function creator(){
+            let ans = prompt("Wanna create a list?", "")
+            if(ans == 'y'){
+                document.body.innerHTML = '<ul></ul>';
+            } else {
+                return;
+            }
+            while(true){
+                let content = prompt("Enter a list entry", "");
+                if(content == '' || content == null) return;
+                document.body.ul.insertAdjacentHTML('beforeend', `<li>${content}</li>`);
+            }
+        }
+        function betterCreator(){
+            let ul = document.createElement('ul');
+            document.body.append(ul);
+            while(true){
+                let data = prompt('data?', "");
+                if(!data)break;
+                let li = document.createElement('li');
+                li.textContent = data;
+                ul.append(li);
+            }
+        }
+        
+        /**
+         * Write a function createTree that creates a nested ul/li list from the nested object. 
+         * Choose one of two ways of solving this task:
+         * 1.Create the HTML for the tree and then assign to container.innerHTML.
+         * 2.Create tree nodes and append with DOM methods.
+         * Would be great if you could do both
+         * P.S. The tree should not have “extra” elements like empty <ul></ul> for the leaves.
+        **/
+        let data = {
+            "Fish": {
+                "trout": {},
+                "salmon": {}
+            },
+            "Tree": {
+                "Huge": {
+                    "sequoia": {},
+                    "oak": {}
+                },
+                "Flowering": {
+                    "apple tree": {},
+                    "magnolia": {}
+                }
+            }
+        };
+
+        function createTree(container, obj){
+            container.innerHTML = createTreeText(obj);
+        }
+        function createTreeText(obj){
+            let li = '';
+            let ul;
+            for(let key in obj){
+                li += "<li>"+ key +createTreeText(obj[key]) + '</li>'
+            }
+            if(li){
+                ul = "<ul>" + li + "</ul>";
+            }
+            return ul || ""
+        }
+        
+        let container = document.getElementById('container');
+        createTree(container, data);
+        /*Write the code that adds to each <li> the number of its descendants. Skip leaves (nodes without children).*/
+        
+    </script>
+</html>
