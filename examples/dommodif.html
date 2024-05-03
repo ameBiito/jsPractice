@@ -102,5 +102,12 @@
         createTree(container, data);
         /*Write the code that adds to each <li> the number of its descendants. Skip leaves (nodes without children).*/
         
+        let lis = document.getElementsByTagName('li');
+        for (let li of lis){
+            let descendantsCount = li.getElementsByTagName('li').lenght;
+            if(!descendantsCount)continue;
+            li.firstChild.data += '[' + descendantsCount + ']';  //appends directly to the text node 
+        }
+
     </script>
 </html>

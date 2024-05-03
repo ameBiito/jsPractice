@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <h1>Calendar</h1>
+    </head>
+    <body>
+        <div id="calendar"></div>
+    </body>
+    <script>
+        let container = document.getElementById("calendar");
+
+        function createCalendar(elem, year, month){
+            let daysOfWeek = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+            let calendarReference = new Date(year, month-1 );
+            let table = document.createElement("table");
+            document.body.append(table);
+            for(let i = 0; i < 6; i++){
+                let week = document.createElement("tr");
+                if(i > 0){
+                    table.append(week);
+                }
+                for(let j = 0; j < 7; j++){
+                    if(i == 0){
+                        let now = document.createElement("th")
+                        table.append(now);
+                        now.append(daysOfWeek[j]);
+                        continue;
+                    }
+                    if( j != calendarReference.getDay()){
+                        continue;
+                    } else {
+                        if(calendarReference.getMonth() == month) return;
+                        let day = document.createElement("td");
+                        week.append(day);
+                        day.append(calendarReference.getDate());
+                        calendarReference += 86400000;
+                    }
+                    
+
+                }
+            }
+        }
+
+        createCalendar(container, 2001, 7);
+
+    </script>
+</html>
