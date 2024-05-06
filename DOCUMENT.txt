@@ -33,7 +33,7 @@
 
     · WALKING THE DOM - All operations on the DOM start with the "document" object throgh which we can reach every element.
         · ONTOP - The topmost tree nodes are available directly as "document" properties:
-            - "document.documentELement" -> The DOM node of the <html> tag, the topmost one.
+            - "document.documentElement" -> The DOM node of the <html> tag, the topmost one.
             - "document.body" -> The DOM node of the <body> tag .
             - "document.head" -> The DOM node of the <head> tag.
                 · A script cannot access an element that doesn't exist at the moment of running(if you're inside <head>, you can't access <body>):
@@ -121,11 +121,12 @@
                     <li>passed</li>
                 </ul>
                 <script>
-                    let elements = document.querySelectorAll('ul > li:last-child');
+                    let elements = document.querySelectorAll('ul > li:last-child'); //-> All subelements of <ul> that are last children 
                     for (let elem of elements) {
                         alert(elem.innerHTML); // "test", "passed"
                     }         
-                </script>   
+                </script>
+            · Pseudo classes like ":hover" and ":active" are supported as well, for instance, "document.querySelectorAll(':hover')" returns a collection of elements that the pointer is over now   
         · "querySelector" - Returns the first found element of "elem.querySelectorAll(css)", it is thus equivalent to: "elem.querySelectorAll(css)[0]"
         · "matches" - The "elem.matches(css)" method returns true if elem matches the css-selector, false otherwise.(Useful when we are iterating and we only need one kind of element)
                 <a href="https://something.zip">
@@ -137,8 +138,13 @@
                         }
                     }
                 </script>
-        · "closest" - "elem.closest(css)" looks for the nearest ancestor that matches the CSS-selector. The "elem" itself is also included in the research
-        · LIVE COLLECTIONS - All methods "getElementsBy[TagName/ClassName/Name]"(legacy) return a live collection. Such connections auto-update when the element 
+        · "closest" - "elem.closest(css)" looks for the nearest ancestor(parent, parent of a parent, ...) that matches the CSS-selector.
+          and returns it if found. The "elem" itself is also included in the research
+        · getElementsBy* - These methods work like querySelector:
+            - "elem.getElementsByTagName(tag)" -> Looks for elements with the given tag and returns a collection of them; tag can also be "*" if you want to look for any tag
+            - "elem.getElementsByClassName(className)" -> Returns collection of elements that have the given CSS class 
+            - "document.getElementsByName(name)" -> Returns collection of elements with the given "name" attribute, document-wide.
+        · LIVE COLLECTIONS - All methods "getElementsBy[TagName/ClassName/Name]" return a live collection. Such connections auto-update when the element 
           changes whereas querySelectorAll returns a static collection:
                 <div>First div</div>
                 <script>
