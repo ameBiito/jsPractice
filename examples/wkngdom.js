@@ -163,5 +163,5 @@ function descendants(){
 function sortedTable(){
     let sortedRows = Array.from(table.tBodies[0].rows)  //gets all <tr> from <tbody>
         .sort((rowA, rowB) => rowA.cells[0].innerHTML.localeCompare(rowB.cells[0].innerHTML)); //compares rows A and B data 
-    table.tBodies[0].append(...sortedRows); //automatically appends ,my
+    table.tBodies[0].append(...sortedRows); //automatically appends 
 }
