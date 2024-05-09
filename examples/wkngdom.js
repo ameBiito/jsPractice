@@ -137,3 +137,31 @@ function workingJk(){
         return ul;
     } 
 }
+
+/**
+ * There’s a tree organized as nested ul/li.
+ * Write the code that adds to each <li> the number of its descendants.
+ *  Skip leaves (nodes without children).
+ */
+
+function descendants(){
+    let lis = getElementsByTagName('li');
+    for(let li of lis){
+        let descendantsCount = li.getElementsByTagName('li').length;
+        if(!descendantsCount) continue;
+
+        li.firstChild.data += '[' + descendantsCount + ']';
+    }
+}
+
+/**
+ * There’s a table:
+ * There may be more rows in it.
+ * Write the code to sort it by the "name" column.
+ */
+
+function sortedTable(){
+    let sortedRows = Array.from(table.tBodies[0].rows)  //gets all <tr> from <tbody>
+        .sort((rowA, rowB) => rowA.cells[0].innerHTML.localeCompare(rowB.cells[0].innerHTML)); //compares rows A and B data 
+    table.tBodies[0].append(...sortedRows); //automatically appends 
+}
