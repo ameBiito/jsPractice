@@ -213,8 +213,8 @@
                 <script>
                     alert(elem.outerHTML); //  <div id="elem">Hello<b>World</b></div>
                 </script> 
-            · When modifying an HTML piece using outerHTML, the element is not changed, instead, it is replaced. That is: The new lines go in its place, however, 
-              references to that element are not deleted and thus is still accessible:
+            · When modifying an HTML piece using "outerHTML", the element is not changed, instead, it is replaced. That is: The new lines go in its place, however, 
+              references to that element are not deleted and thus the old code is still accessible:
                     <div> Hello </div>
                     <script>
                         let div = document.querySelector('div'); 
