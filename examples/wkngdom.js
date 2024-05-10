@@ -163,5 +163,35 @@ function descendants(){
 function sortedTable(){
     let sortedRows = Array.from(table.tBodies[0].rows)  //gets all <tr> from <tbody>
         .sort((rowA, rowB) => rowA.cells[0].innerHTML.localeCompare(rowB.cells[0].innerHTML)); //compares rows A and B data 
-    table.tBodies[0].append(...sortedRows); //automatically appends 
+    table.tBodies[0].append(...sortedRows); //automatically appends   
+}
+
+/**
+ * Write a function showNotification(options) that creates a notification: <div class="notification"> with the given content.
+ * The notification should automatically disappear after 1.5 seconds.
+ * Use CSS positioning to show the element at given top/right coordinates. The source document has the necessary styles.
+ */
+
+function showNotification({top = 0, right = 0, className, html}){
+    let div = document.createElement('div')
+    let p = document.createElement('p');
+    div.setAttribute("class", "notification")
+    p.setAttribute("class", className);
+    p.append(html);
+    div.append(p);
+    document.body.append(div);
+    
+
+}
+
+function testNotification(){
+    let i = 1;
+    setInterval(() => {
+      showNotification({
+        top: 10,
+        right: 10,
+        html: 'Hello ' + i++,
+        className: "welcome"
+      });
+    }, 2000);
 }

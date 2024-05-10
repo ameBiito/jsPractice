@@ -460,7 +460,7 @@
                     <body class="main page">
                         <script>
                             document.body.classList.add('article');
-                            alert(document.body.className); //main page article (the object now is an instance of main page article, while main page continues to exist)
+                            alert(document.body.className); //main page article (the object now inherits from main page and article)
                     </script></body>
                 · The methods of "classList" are:
                     - "elem.classList.add/remove("class")" -> Adds/removes the class 
@@ -479,4 +479,40 @@
                     width: 100px;
                     text-allign: center;
                 `;
-            · However, this has a side effect, as it doesn't  
+            · However, this has a side effect, as it doesn't add to the styles that already exist and instead overwrites them.
+            · Rememeber to use the CSS units (px, em, %, ...) when dealing with this
+        · GETTING STYLES - Since the "style" property operates on the value of the "style" attribute, without any CSS cascade, we need to use 
+          "getComputedStyle(element[, pseudo])" to get the values of margin, padding, .... where:
+            - "element" -> The element to read the value form
+            - "pseduo" -> A pseudo-element, for instance "::before". An empty string or no argument means the element itself 
+          The result is an object with styles, like "elem.style" but now with respect to all CSS classes:
+                <head>
+                    <style> body {color: red; margin: 5px} </style>
+                </head>
+                <body>
+                    <script>
+                        let computedStyle = getComputedStyle(document.body);
+                        alert(computedStyle.marginTop); //5px 
+                        alert(computedStyle.color); // rgb(255, 0, 0)
+                </script> </body>
+            · A "computed style value" is the value after all CSS rules and inheritance is applied, as the reuslt of the CSS cascade(height: 1em, font-size: 125%)
+            · A "resolved style value" is the value finally applied to the element. The browser takes the relative measurements(1em, 125%) and transforms 
+              them into fixed values (font-size: 125% -> font-size: 20px). For geometry properties resolved styles can have a floating value(50.5 px)
+            · The pseudo-class ":visited" does not give access to its styles because if so, a third party could check if someone visited the link looking at the styled sheet
+
+    · ELEMENT SIZE AND SCROLLING - There are many js properties that allow us to read information about element width, height or other geometry features
+        · "offsetParent", "offsetLeft/Top" - The "offsetParent" is the nearest ancestor that the browser uses for calculating coordinates during rendering.
+          "offsetLeft/Top" provide x/y coordinates relative to "offsetParent"'s upper left corner
+            · "offsetParent" may be null :
+                1. For not shown elements(display: none or not in teh document)
+                2. For <body> and <html>
+                3. For elements with "position: fixed"
+        · "offsetWidth/Height" -> These properties provide the "outer"(that is, including the border) width/height of the element.
+            · Geometry properties are zero/null for elements that are not displayed, this can be used to check if an element is hidden:
+                    function isHidden(elem){
+                        return !elem.offsetWidth && !elem.offsetHeight
+                    }   
+                · Note however that even the hidden elements have to be on screen 
+        · "clientTop/Left" - These properties are the relative coordinates of the inner side from the outer side (kinda the border height and width but not really
+          since if the OS reads from right to left (hebrew, arabic) and you had to insert a scroll-bar, the clientLeft would be the border+scrollbar)
+        · "clientWidth/Height" - 
