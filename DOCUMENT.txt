@@ -515,4 +515,44 @@
                 · Note however that even the hidden elements have to be on screen 
         · "clientTop/Left" - These properties are the relative coordinates of the inner side from the outer side (kinda the border height and width but not really
           since if the OS reads from right to left (hebrew, arabic) and you had to insert a scroll-bar, the clientLeft would be the border+scrollbar)
-        · "clientWidth/Height" - 
+        · "clientWidth/Height" - These properties provide the size of the area inside the element borders, they inlcude the padding in their 
+          measurements but not the scrollbars 
+        · "scrollWidth/Height" - These are like "clientWidth/Height" but include also the scrolled out(hence hidden) parts; they can be used to expand 
+          the element to its full height/width 
+        · "scrollLeft/Top" - These properties show how much you've scrolled on the element, they're useful because they can be used to write as well
+          and thus scroll automatically an element to a certain point   
+
+    · WINDOW SIZES AND SCROLLING - To get the current window width and height we can use "clientWidth/clientHeight" on "document.documentElement"
+      which is the <html> tag.
+        · Because of ancient stuff, when we get "documentElement" height and width, we need to use Math.max or we'll have inconsistencies in the measurements.
+        · "scrollLeft/Top" applied on <html> works in most browsers however, the scroll is available in the special properties:
+                alert("Current scroll from top" + window.pageYOffset);
+                alert("Current scroll from the left" + window.pageXOffset);
+            · Both of these properties are read-only 
+        · SCROLLING 
+            · Rememeber, in order to scroll with js, the DOM must be fully built
+            · We can scroll arbitrarly a document by using:
+                · window.scrollBy(x, y) -> Scrolls the page relatively to its current position: scrollBy(0, 10) scrolls the page down by 10px
+                · window.scrollTo(pageX, pageY) -> Scrolls the page to absoulute coordinates, so that the top-left corner of the visible part 
+                  has coordinates (pageX, pageY) relative to the document's top-left corner
+            · elem.scrollIntoView(top) -> This method scolls the page until the "elem" is visible, if top == true, the "elem" will be at the top
+              if top == false, the "elem" will be at the bottom 
+        · FORBID THE SCROLLING - In order to prevent scrolling, we set "document.elem.style.overflow = 'hidden'", this way the page freezes at its
+          current scroll position. We need however to handle the fact that if scolling is forbidden, the scrollbar will disappear and the page content
+          will try to jump into it to fill the void:
+                document.elem.style.overflow = 'hidden'; // blocks
+                document.elem.style.overflow = ''; // unblocks
+
+    · COORDINATES - Most js methods deal with one of 2 coordinates systems:
+        1. Relative to the window - Similair to "position:fixed", calculated from the window top/left edge, denoted by "clientX/Y"
+        2. Relative to the document - Similair to "position:absoulute", calculated from the document's top/left edge, denoted by "pageX/Y"
+            · To understand, when you are at the very beginning, so that document's top/left is equal to window's top/left, they're equal
+            · ELEMENT COORDINATES 
+                · "elem.getBoundingClientRect()" -> Returns window coordinates for a minimal rectangle that encloses "elem" as an 
+                   object of built-in "DOMRect class" whose main properties are:
+                    - x/y -> x/y coordinates of the rectangle relative to the window 
+                    - width/height -> Width/height of the rectangle(can be negative)
+                    - top/bottom -> Y coordinate for the top/bottom rectangle edge 
+                    - left/right -> X coordinate for the left/right rectangle edge 
+                · "document.elementFromPoint(x, y)" -> Returns the most nested element at window coordinates "(x, y)"
+                

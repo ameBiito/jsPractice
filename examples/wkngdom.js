@@ -174,14 +174,15 @@ function sortedTable(){
 
 function showNotification({top = 0, right = 0, className, html}){
     let div = document.createElement('div')
-    let p = document.createElement('p');
     div.setAttribute("class", "notification")
-    p.setAttribute("class", className);
-    p.append(html);
-    div.append(p);
+    if(className){
+        div.classList.add(className);
+    }
+    div.style.top = top + "px";
+    div.style.right = right + "px";
+    div.innerHTML = html;
     document.body.append(div);
-    
-
+    setTimeout(() => div.remove(), 1500);
 }
 
 function testNotification(){
@@ -194,4 +195,42 @@ function testNotification(){
         className: "welcome"
       });
     }, 2000);
+}
+
+/**
+ * The elem.scrollTop property is the size of the scrolled out part from the top.
+ * How to get the size of the bottom scroll (let’s call it scrollBottom)?
+ * Write the code that works for an arbitrary elem.
+ * P.S. Please check your code: if there’s no scroll or the element is fully scrolled down, then it should return 0.
+ */
+
+function scroll(){
+    let scrollBottom = elem.scrollHeight - elem.scrollTop - elem.clientHeight;
+}
+
+/**
+ * Write the code that returns the width of a standard scrollbar.
+ * For Windows it usually varies between 12px and 20px.
+ *  If the browser doesn’t reserve any space for it (the scrollbar is half-translucent over the text, also happens),
+ *  then it may be 0px.
+ * P.S. The code should work for any HTML document, do not depend on its content.
+ */
+
+function scrllWidth(){
+    let width = elem.offsetWidth - elem.clientWidth;
+}
+
+/**
+ * What are coordinates of the field center?
+ * Calculate them and use to place the ball into the center of the green field:
+ * The element should be moved by JavaScript, not CSS. 
+ *  The code should work with any ball size (10, 20, 30 pixels) and any field size, not be bound to the given values.
+ * P.S. Sure, centering could be done with CSS, but here we want exactly JavaScript.
+ * Further we’ll meet other topics and more complex situations when JavaScript must be used. Here we do a “warm-up”.
+ */
+
+function centerFinder(){
+    //since ball position is absoulte, it means that its left/top coordinates are measured from the nearest postitioned element
+    ball.style.left = Math.round(field.clientWidth/2 - ball.offsetWidth/2) + 'px';
+    ball.style.top = Math.round(field.clientHeight/2 - ball.offsetHeight/2) + 'px';
 }
