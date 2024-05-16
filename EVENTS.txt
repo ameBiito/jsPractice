@@ -58,3 +58,22 @@
                 }
             };
             elem.addEventListener('click', obj);  // when the event occurs, handleEvent is called automatically 
+
+    · BUBBLING AND CAPTURING 
+        · BUBBLING - When an event happens on an element, it first runs the handlers on it, then on its parent, then all the way up 
+          to the farthest ancestor. Basically, an event is handled on the leaf, then events bubble from the inner element up though
+          parents, like a bubble in the water.
+            · Not all events bubble ("focus" doesn't)
+            · EVENT TARGET - The element that caused the bubbling is called "target element" and is accessible as "event.target", which for 
+              the first element is equal to "this", after that, "this" becomes the current event
+            · STOPPING BUBBLING - In order to stop bubbling, we use "event.stopPropagation()" to stop 1 handler, however, if an event has multiple 
+              handler and we want to stop them altogether, we use "event.stopImmediatePropagation()", after it, no other handlers execute.
+        · CAPTURING - The standard DOM events describes 3 phases of event propagation:
+            1. Capturing phase -> The event goes down to the element(starts from ancestor and goes down to target)
+            2. Target phase -> The event reached the target element 
+            3. Bubbling phase -> The event bubbles up from the element 
+                · To catch an event on the capturing phase, we need to set the handler's "capture" to true:
+                        elem.addEventListener(..., {capture: true});
+                    · If we want to remove this handler, we need to specify the capture as well, removeEventListener(..., {capture: true})
+                    · If we call "event.stopPropagation()" or "event.stopImmediatePropagation()" while in capturing phase, not only we stop the 
+                      capturing, but we also prevent the bubbling. 
