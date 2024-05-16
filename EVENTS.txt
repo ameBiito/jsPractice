@@ -1,0 +1,60 @@
+· INTRODUCTION TO BROWSER EVENTS - An event is a signal that something has happened, all DOM elements must generate one 
+
+    · EVENTS EXAMPLE - There are a lot of different kinds of events, following, the most useful ones:
+        · MOUSE EVENTS:
+            - "click" -> When the mouse clicks an element
+            - "contextmenu" -> When the mouse r-clicks something 
+            - "mouseover / mouseout" -> When the mouse cursor comes over/leaves an element
+            - "mousedown / mouseup" -> When the mouse button is pressed/relased over an element
+            - "mousemove" -> When the mouse is moved 
+        · KEYBOARD EVENTS: 
+            - "keydown" and "keyup" -> When a kb key is pressed and relased 
+        · FORM ELEMENT EVENTS:
+            - "submit" -> When the visitor submits a <form>
+            - "focus" -> When the visitor focuses on an element (e.g an <input>) 
+        · DOCUMENT EVENTS:
+            - "DOMContentLoaded" -> When the HTML is loaded and processed, DOM is fully built 
+        · CSS EVENTS:
+            - "transitioned" -> When a CSS-animation finishes 
+    · EVENT HANDLERS - To react to an event we need something to handle it, a function that runs in case an event occurs. There are several 
+      ways to assign an handler:
+        · HTML ATTRIBUTE - An handler can be set in HTML with an attribute "on<event>":
+                <input value="clickMe" onclick="alert('Click!)" type="button">
+            Better yet, we can assign a function to an event:
+                    <input type="button" onclick="function()" value="Some Value"> //-> when button is clicked, function() does something
+        · DOM PROPERTY - We can assign an handler using a DOM property:
+                <script>
+                    elem.onclick = function(){
+                        alert("Clicked");
+                    };
+                </script>
+        · The value of "this" inside an handler is the element itself, the one which has the handler on it 
+    · IT IS NOT POSSIBLE TO USE "setAttribute" for handlers since attributes are always strings 
+    · ADD EVENT LISTENER -  In order to assign multiple handlers for an event, we need to use special properties "addEventListener" and "removeEventListener":
+        - "elem.addEventListener(event, handler [, options])" -> Where:
+            - "event" -> Event name (click)
+            - "handler" -> The handler function 
+            - "options" -> An additional object with properties:
+                - "once" -> If true, then the listener is removed after it triggers once 
+                - "capture" -> The phase where to handle the event 
+                - "passive" -> If true, then the handler won't call "preventDefault()"
+        - "elem.removeEventListener(event, handler [, options])" -> Used to remove the handler. In order to remove an handler, we should pass 
+          exactly the same function that was assigned, hence, if you want to remove an handler, the function has to be stored in a variable 
+          and cannot be inline 
+                elem.addEventListener("click", () => alert("Click"));
+                elem.removeEventListener("click"; () => alert("Click")); // doesn't work, cannot be removed 
+                elem.addEventListener("click", handler); // hander is a previuosly defined function
+                elem.removeEventListener("click", handler); //removed 
+        · Multiple cals to addEventListener() allow it to add multiple handlers 
+    · EVENT OBJECT - When an event occurs, the browser creates an event object with several details in it and passes as an argument to the handler.
+      Some of properties of "event" object are:
+        - "type" -> Event type (click)
+        - "currentTarget" -> Element that handled the event. That's the same as "this" unless the handler is arrow function or its "this" is bound to something else 
+        - "clientX/Y" -> Window relative coordinates of the cursor
+    · OBJECT HANDLERS - We can assign an object as an handler usind "addEventListener()", when an event occurs, its "handleEvent" method is called:
+            let obj = {
+                handleEvent(event){
+                    alert(event.type + "at" + event.currentTarget);
+                }
+            };
+            elem.addEventListener('click', obj);  // when the event occurs, handleEvent is called automatically 
