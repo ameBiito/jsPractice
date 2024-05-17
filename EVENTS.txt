@@ -77,3 +77,58 @@
                     · If we want to remove this handler, we need to specify the capture as well, removeEventListener(..., {capture: true})
                     · If we call "event.stopPropagation()" or "event.stopImmediatePropagation()" while in capturing phase, not only we stop the 
                       capturing, but we also prevent the bubbling. 
+
+    · EVENT DELEGATION - If we have a lot of elements handled in a similair way, instead of assigning an handler to each one of them, we put 
+      a single hander on their common ancestor. For example, an handler to highlight what we clicked in a table:
+            table.onclick = function(event){  // we pass the event object 
+                let target = event.target; //where was the click?
+                if(target.tagName != 'TD')return;
+                highlight(target);
+            }
+        · We can also use an object with several attributes instead of a function:
+                <div>
+                    <button data-action="save">Save</button>
+                    <button data-action="load">Load</button>
+                </div>
+                <script>
+                    class Doer{
+                        constructor(elem){
+                            this._elem = elem;
+                            elem.onclick = this.onClick.bind(this);
+                        }
+                        save(){
+                            doSomething();
+                        }
+                        load(){
+                            doSomething();
+                        }
+                        onClick(event){
+                            let action = event.target.dataset.action;
+                            if(action){
+                                this[action]();
+                            }
+                        }
+                    }
+        · We can also do stuff such as a general function for a certain behaviour:
+                <input type="button" value="1" data-counter>
+                <input type="button" value="2" data-counter>
+                <script>
+                    document.addEventListener('click', function(event){
+                        if(event.target.dataset.counter != undefined){ // if counter attribute exists 
+                            event.target.value++;
+                        }
+                    });
+                </script>
+
+    · BROWSER DEFAULT ACTIONS - A browser has several default actions(text selecting, link opening, ...) which can be blocked explicitly
+        · PREVENTING BROWSER ACTIONS - There are 2 ways to tell the browser we don't want to act:
+            1. Using the "event" object since there is a method "event.preventDefault()"
+            2. If the handler is assigned using "on<event>", then returning false does the same 
+                    <a href="/" onclick="return false">Link1</a>
+                    <a href="/" onclick="event.preventDefault()">Link2</a> //both do nothing 
+            · If we want to tell the browser that we're not going to prevent any default behaviour and thus eliminate unecessary controls
+              that may cause lag or jitter, we use the "passive: true" option of "addEventListener()", this way it signals right away that 
+              we're not going to use "preventDefault()" 
+            · In order to check if an element default behaviour was prevented, we have the attribute "event.defaultPrevented" which 
+              returns true if the event default behaviour was prevented. This can be used to prevent unecessary bubbling while at the same 
+              time having the possibility to use it for other handlers 
