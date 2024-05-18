@@ -132,3 +132,41 @@
             · In order to check if an element default behaviour was prevented, we have the attribute "event.defaultPrevented" which 
               returns true if the event default behaviour was prevented. This can be used to prevent unecessary bubbling while at the same 
               time having the possibility to use it for other handlers 
+
+    · DISPATCHING CUSTOM EVENTS - Events can be generated from js as well 
+        · EVENT CLASS 
+            · The constructor is: let event = new Event(type[, options]); where:
+                - "type" -> Event type (click) or custom (my-event)
+                - "options" has 2 properties:   
+                    - "bubbles" -> bool if event bubbles 
+                    - "cancelable" -> bool if "default action" can be prevented 
+                    - by default {bubbles: false, cancelable: false}
+            · After the event has been created, it has to be run on an element using the call "elem.dispatchEvent(event)", the browser will
+              treat it as a regular event. In order to distinguish a script-generated event from a regular one we can use "event.isTrusted" 
+              which will be false for script-generated events.
+            · We can't use "on<event>" for custom events, only "addEventListener()"
+        · CUSTOM EVENTS 
+            · For our own completely new events type like "my-event" we should use "CustomEvent" which is the same as "Event" but has also an 
+              additional property: "detail" which can contain any kind of information:
+                    elem.addEventListener("myEvent", function(event){
+                        alert(event.detail.name);
+                    });
+                    elem.dispatchEvent(new CustomEvent("myEvent", {
+                        detail: {
+                            name: "John"
+                        }
+                    }));
+                · In order to stop an event default behaviour, we use "event.preventDefault()", a function that can stop an handler execution.
+                  In order to be callble, the event's "cancelable" flag must be set to true:
+                        function hide(){
+                            let event = new CustomEvent("hide", {
+                                cancelable: true                      //without it preventDefault() doesn't work
+                            });
+                        }
+                        tagName.addEventListener('hide', function(event){
+                            if(confirm("Stop default behaviour?")){
+                                event.preventDefault();
+                            }
+                        });
+        · EVENTS IN EVENTS - Usually, events are processed in a queue(another event occurs after the previous one is done); An exception is 
+          when an event is initiated from within another one: such events are processed immediatly 
